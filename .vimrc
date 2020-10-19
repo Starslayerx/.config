@@ -1,32 +1,64 @@
-""""""""""""""""vim basic config""""""""""""""""""
+""" vim config """
 set nu
-set t_Co=256
-set nobackup
-syntax on
-set tabstop=4
-set softtabstop=4
-set scrolloff=4
-set shiftwidth=4
-set expandtab
 set showcmd
-set autoindent
+set t_Co=256
+set expandtab
+set nobackup
+set expandtab
+set cursorline
+set nocompatible
 set smartindent
-set cindent
+set autoindent
+
+set tabstop=4
+set shiftwidth=4
+set guifont=Hack:h14
+set fenc=utf-8
 set encoding=utf-8
-let loaded_matchparen=1 "取消括号高亮"
-colorscheme default
+set scrolloff=15
+
+%retab!
+syntax on
+
 inoremap ' ''<ESC>i
 inoremap " ""<ESC>i
 inoremap ( ()<ESC>i
 inoremap [ []<ESC>i
 inoremap {<CR> {<CR>}<ESC>O
 
-""""""""light vim settings""""""""""
+
+""" vim plug config """
+call plug#begin('~/.vimi/plugged')
+Plug 'frazrepo/vim-rainbow'
+Plug 'itchyny/lightline.vim'
+Plug 'arcticicestudio/nord-vim'
+call plug#end()
+
+
+
+""" lightline config """
 set laststatus=2
 let g:lightline = {
-      \ 'colorscheme': 'wombat',
+      \ 'colorscheme': 'nord',
       \ }
-""""""""""""""""""""""VIM PLUGS"""""""""""""""""""""""""
-call plug#begin('~/.vim/plugged')
-Plug 'itchyny/lightline.vim'
-call plug#end()
+
+
+
+""" nord config """
+colorscheme nord
+
+
+
+""" vim rainbow config """
+let g:rainbow_active = 1
+let g:rainbow_load_separately = [
+    \ [ '*' , [['(', ')'], ['\[', '\]'], ['{', '}']] ],
+    \ [ '*.tex' , [['(', ')'], ['\[', '\]']] ],
+    \ [ '*.cpp' , [['(', ')'], ['\[', '\]'], ['{', '}']] ],
+    \ [ '*.cc' , [['(', ')'], ['\[', '\]'], ['{', '}']] ],
+    \ [ '*.c' , [['(', ')'], ['\[', '\]'], ['{', '}']] ],
+    \ [ '*.{html,htm}' , [['(', ')'], ['\[', '\]'], ['{', '}'], ['<\a[^>]*>', '</[^>]*>']] ],
+    \ ]
+
+let g:rainbow_guifgs = ['RoyalBlue3', 'DarkOrange3', 'DarkOrchid3', 'FireBrick']
+let g:rainbow_ctermfgs = ['blue', 'green', 'red', 'magenta']
