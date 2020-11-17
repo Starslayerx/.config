@@ -29,7 +29,7 @@ syntax on
 
 
 """ vim plug config """
-call plug#begin('~/.vimi/plugged')
+call plug#begin('~/.config/nvim/plugged')
 Plug 'itchyny/lightline.vim'
 Plug 'tpope/vim-fugitive'
 Plug 'arcticicestudio/nord-vim'
