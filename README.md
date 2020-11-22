@@ -26,4 +26,4 @@ chmod +x docker_dli_run.sh
 Remember to change the <tag> if you need other versions:
   > v2.0.1-r32.4.4
   
-  You can find all containers [ here])(https://ngc.nvidia.com/catalog/containers/nvidia:dli:dli-nano-ai).
+  You can find all containers [here](https://ngc.nvidia.com/catalog/containers/nvidia:dli:dli-nano-ai).
