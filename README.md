@@ -3,6 +3,11 @@ linux config files
 
 
 ## jetson nano config
+- use ssh to connect nano
+```bash
+ssh <username>@192.168.55.1
+```
+
 - USB camera
 ```bash
 echo "sudo docker run --runtime nvidia -it --rm --network host \
