@@ -4,11 +4,14 @@
 alias ssh-aliyun="ssh root@120.26.176.198"
 alias ssr-h="export http_proxy=http://127.0.0.1:12333"
 alias ssr-hs="export https_proxy=http://127.0.0.1:12333"
+alias ssr-git="git config --global http.proxy 'socks5://127.0.0.1:1080'"
+alias ssr-gits="git config --global https.proxy 'socks5://127.0.0.1:1080'"
 
 alias r='ranger'
 alias c='clear'
 alias s='neofetch'
 alias vim='nvim'
+
 
 export EDITOR="nvim"
 export VISUAL="nvim"
