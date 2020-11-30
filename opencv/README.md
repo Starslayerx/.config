@@ -612,3 +612,4 @@ and
 ```shell
 sudo make install
 ```
+不要安装anaconda，anaconda导致我编译过后无法安装，然后再编译也不行了，所以不要装anaconda
