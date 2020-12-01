@@ -5,6 +5,10 @@
 
 
 # ssr
+- python needed
+```shell
+sudo apt install python
+```
 - 安装依赖
 ```shell
 sudo apt install libcanberra-gtk-module libcanberra-gtk3-module gconf2 gconf-service libappindicator1
