@@ -33,6 +33,9 @@ call plug#begin('~/.config/nvim/plugged')
 Plug 'itchyny/lightline.vim'
 Plug 'tpope/vim-fugitive'
 Plug 'arcticicestudio/nord-vim'
+Plug 'mg979/vim-visual-multi', {'branch': 'master'}
+Plug 'tpope/vim-surround'
+Plug 'gcmt/wildfire.vim'
 call plug#end()
 
 
@@ -62,6 +65,3 @@ let g:nord_underline = 1
 let g:nord_uniform_diff_background = 1
 colorscheme nord
 hi Comment ctermfg=Cyan
-
-
-""" vim rainbow ""
