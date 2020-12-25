@@ -1,5 +1,5 @@
 """ vim config """
-set nonu
+set nu
 set showcmd
 set t_Co=256
 set expandtab
@@ -9,6 +9,8 @@ set cursorline
 set nocompatible
 set smartindent
 set autoindent
+set laststatus=2
+set statusline=%<%f\ %h%m%r%{kite#statusline()}%=%-14.(%l,%c%V%)\ %P
 
 set tabstop=4
 set shiftwidth=4
@@ -39,8 +41,6 @@ Plug 'gcmt/wildfire.vim'
 call plug#end()
 
 
-""" lightline config """
-set laststatus=2
 
 let g:lightline = {
       \ 'colorscheme': 'nord',
@@ -65,3 +65,6 @@ let g:nord_underline = 1
 let g:nord_uniform_diff_background = 1
 colorscheme nord
 hi Comment ctermfg=Cyan
+
+"" kite config ""
+let g:kite_supported_languages = ['c', 'cpp', 'cc', 'python', 'javascrpit', 'go']
