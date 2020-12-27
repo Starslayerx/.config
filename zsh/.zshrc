@@ -11,11 +11,16 @@ alias r='ranger'
 alias c='clear'
 alias s='neofetch'
 alias vim='nvim'
+alias matlab='sudo /usr/local/MATLAB/R2018b/bin/matlab'
+alias rs="realsense-viewer"
 
 
 export EDITOR="nvim"
 export VISUAL="nvim"
+export PATH=$PATH:/home/starslayerx/.local/bin
 export PATH=$PATH:/usr/local/go/bin
+export WORKON_HOME=$HOME/.virtualenvs
+export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
 
 # JetsonNano Config
 # ssh sx@192.168.55.1
