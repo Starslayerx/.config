@@ -10,7 +10,7 @@ sudo apt install gnome-tweaks gnome-tweak-tool gnome-shell-extensions
 ### Settings
 - Themes
   `~/.themes`
-- Icons
+- Icons(Cursors)
   `~/.icons`  
 Then you can change it in gnome-tweaks.
 
