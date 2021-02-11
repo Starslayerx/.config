@@ -1,10 +1,9 @@
-- Themes
-Unzip to folder:
+### Dependencies
 ```bash
-~/.themes
+sudo apt install gnome-tweaks gnome-tweak-tool gnome-shell-extensions
 ```
-or
-```bash
-/usr/share/themes/
-```
-Them you can change it in gnome-tweaks
+- (User-themes)[https://extensions.gnome.org/extension/19/user-themes/]
+- (Topicons Plus)[https://extensions.gnome.org/extension/495/topicons/]
+
+### Themes
+Unzip to`~/.themes`or`/usr/share/themes/`, then you can change it in gnome-tweaks.
