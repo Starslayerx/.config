@@ -13,3 +13,6 @@ sudo apt install gnome-tweaks gnome-tweak-tool gnome-shell-extensions
 - Icons
   `~/.icons`  
 Then you can change it in gnome-tweaks.
+
+### Others
+[GnomeArchWiki-cn](https://wiki.archlinux.org/index.php/GNOME_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)#%E9%AB%98%E7%BA%A7%E8%AE%BE%E7%BD%AE)
