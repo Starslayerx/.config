@@ -14,7 +14,7 @@ sudo apt install gnome-tweaks gnome-tweak-tool gnome-shell-extensions
   `~/.icons`  
 Then you can change it in gnome-tweaks.
 - GDM Themes
-  - High Ubunterra
+  - [High Ubunterra](https://github.com/EugeneVe/HighUbunterra-withPassword)
   ```bash
   sudo apt upate
   sudo apt upgrade
