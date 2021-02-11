@@ -19,3 +19,8 @@
   ```bash
   flatpak install flathub com.wps.Office
   ```
+
+### Install all in one line
+```bash
+  flatpak install flathub com.spotify.Client io.mrarm.mcpelauncher org.videolan.VLC com.github.alainm23.planner com.wps.Office
+```
