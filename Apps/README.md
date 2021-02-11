@@ -19,7 +19,7 @@
   ```bash
   flatpak install flathub com.wps.Office
   ```
- - [Fcitx5](https://www.csslayer.info/wordpress/fcitx-dev/fcitx5-on-flatpak/)
+- [Fcitx5](https://www.csslayer.info/wordpress/fcitx-dev/fcitx5-on-flatpak/)
   ```bash
   # 添加 flathub 到用户级
   flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
