@@ -60,3 +60,15 @@
   ```bash
   flatpak install flathub io.gitlab.o20.word￼content_copy
   ```
+- Popsicle
+  ```bash
+  flatpak install flathub com.system76.Popsicle
+  ```
+- Steam
+  ```bash
+  flatpak install flathub com.valvesoftware.Steam
+  ```
+- Workflow
+  ```bash
+  flatpak install flathub com.gitlab.cunidev.Workflow
+  ```
