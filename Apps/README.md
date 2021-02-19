@@ -72,17 +72,13 @@
   ```bash
   flatpak install flathub com.valvesoftware.Steam
   ```
-- Workflow
+- Qv2ray
   ```bash
-  flatpak install flathub com.gitlab.cunidev.Workflow
+ flatpak install flathub com.github.Qv2ray
   ```
 - Stremio
   ```bash
   flatpak install flathub com.stremio.Stremio
-  ```
-- Splash
-  ```bash
-  flatpak install flathub in.bharatkalluri.splash
   ```
 - Telegram
   ```bash
