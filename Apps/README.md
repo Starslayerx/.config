@@ -88,3 +88,9 @@
   ```bash
   flatpak install flathub org.telegram.desktop￼content_copy
   ```
+
+#### Usage
+Run this command in terminal (you could add other commands, like proxychains)
+```bash
+proxychians4 flatpak run com.stremio.Stremio
+```
