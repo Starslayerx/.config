@@ -44,6 +44,10 @@
   ```bash
   flatpak install flathub net.cozic.joplin_desktop
   ```
+- Standard Notes
+  ```bash
+  flatpak install flathub org.standardnotes.standardnotes￼content_copy
+  ```
 - Foliate
   ```bash
   flatpak install flathub com.github.johnfactotum.Foliate
@@ -71,4 +75,16 @@
 - Workflow
   ```bash
   flatpak install flathub com.gitlab.cunidev.Workflow
+  ```
+- Stremio
+  ```bash
+  flatpak install flathub com.stremio.Stremio
+  ```
+- Splash
+  ```bash
+  flatpak install flathub in.bharatkalluri.splash
+  ```
+- Telegram
+  ```bash
+  flatpak install flathub org.telegram.desktop￼content_copy
   ```
