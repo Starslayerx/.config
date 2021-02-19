@@ -3,9 +3,18 @@
   ```bash
   flatpak install flathub com.spotify.Client
   ```
+- Show Me Lyrics
+  ```bash
+  flatpak install flathub com.github.muriloventuroso.givemelyrics
+  ```
+- Kdenlive
+  ```bash
+  flatpak install flathub org.kde.kdenlive
+  ```
 - Minecraft
   ```bash
   flatpak install flathub io.mrarm.mcpelauncher
+  flatpak install flathub com.mojang.Minecraft
   ```
 - VLC
   ```bash
@@ -30,4 +39,20 @@
   flatpak install org.fcitx.Fcitx5.Addon.ChineseAddons
   # 例如需要 Rime： flatpak install org.fcitx.Fcitx5.Addon.Rime
   # 可以用 flatpak remote-ls fcitx5-unstable 查看有哪些包
+  ```
+- Joplin
+  ```bash
+  flatpak install flathub net.cozic.joplin_desktop
+  ```
+- Foliate
+  ```bash
+  flatpak install flathub com.github.johnfactotum.Foliate
+  ```
+- Fluent Reader(RSS reader)
+  ```bash
+  flatpak install flathub me.hyliu.fluentreader
+  ```
+- Flameshot
+  ```bash
+  flatpak install flathub org.flameshot.Flameshot
   ```
