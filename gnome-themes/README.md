@@ -23,7 +23,12 @@ Then you can change it in gnome-tweaks.
   sudo apt install imagemagick-6.q16hdri
   sudo apt install imagemagick-6.q16
   ```
-
+- Plyoumut Theme
+  ```bash
+  sudo cp -R ./vinyl /lib/plymouth/themes/
+  sudo ln -sf /lib/plymouth/themes/vinyl/vinyl.plymouth /etc/alternatives/default.plymouth
+  sudo update-initramfs -u -k all
+  ```
 ### Others
 [GnomeArchWiki-cn](https://wiki.archlinux.org/index.php/GNOME_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)#%E9%AB%98%E7%BA%A7%E8%AE%BE%E7%BD%AE)    
 [GnomeLook](https://www.gnome-look.org/browse/cat/)
