@@ -56,3 +56,7 @@
   ```bash
   flatpak install flathub org.flameshot.Flameshot
   ```
+- O20.Word
+  ```bash
+  flatpak install flathub io.gitlab.o20.word￼content_copy
+  ```
