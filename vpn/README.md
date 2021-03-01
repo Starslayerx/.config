@@ -29,3 +29,12 @@ sudo dpkg -i *.deb
 | https | 127.0.0.1 | 12333 |
 | socks | 127.0.0.1 | 1080 |
 | (忽略主机) |localhost, 127.0.0.0/8, ::1| |
+
+## WIT
+```bash
+sudo apt install network-manager-l2tp-gnome
+```
+- 添加第二层隧道协议
+  - 网关: 59.172.155.68
+  - 帐号: 学号
+  - 
