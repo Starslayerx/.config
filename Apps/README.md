@@ -90,3 +90,9 @@ Run this command in terminal (you could add other commands, like proxychains)
 ```bash
 proxychians4 flatpak run com.stremio.Stremio
 ```
+
+## Chrome Os
+- Install snapd on Chrome Os linux vm
+```bash
+sudo apt install -y libsquashfuse0 squashfuse fuse snapd
+```
