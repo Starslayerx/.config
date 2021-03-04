@@ -37,4 +37,7 @@ sudo apt install network-manager-l2tp-gnome
 - 添加第二层隧道协议
   - 网关: 59.172.155.68
   - 帐号: 学号
-  - 
+
+
+## VPNHotspot
+- Share your vpn connection through your phone.
