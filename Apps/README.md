@@ -84,7 +84,11 @@
   ```bash
   flatpak install flathub org.telegram.desktop￼content_copy
   ```
-
+#### Manage flatpak apps
+- Use flatseal to manage installed flatpak apps
+```bash
+flatpak install flathub com.github.tchx84.Flatseal
+```
 #### Usage
 Run this command in terminal (you could add other commands, like proxychains)
 ```bash
