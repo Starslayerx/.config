@@ -74,7 +74,7 @@
   ```
 - Qv2ray
   ```bash
- flatpak install flathub com.github.Qv2ray
+  flatpak install flathub com.github.Qv2ray
   ```
 - Stremio
   ```bash
