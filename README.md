@@ -15,3 +15,7 @@ sudo apt install p7zip-full
   ```bash
   7z e <archive name>
   ```
+- unzip with password
+  ```bash
+  7z e <name> -p<Password>
+  ```
