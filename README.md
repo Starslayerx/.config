@@ -19,3 +19,8 @@ sudo apt install p7zip-full
   ```bash
   7z e <name> -p<Password>
   ```
+
+### tar.gz
+```bash
+tar -xzf xxx.tar.gz
+```
