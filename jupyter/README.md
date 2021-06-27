@@ -28,7 +28,7 @@ pip install ipympl
 ```
 > %matplotlib widget
 
-- [plotly](https://github.com/gnestor/jupyterlab_plotly): 交互式绘图
+- [plotly](https://github.com/gnestor/jupyterlab_plotly): 交互式绘图（几年没更新）
 ```python
 pip install jupyterlab_plotly
 # For JupyterLab
