@@ -24,3 +24,8 @@ sudo apt install p7zip-full
 ```bash
 tar -xzf xxx.tar.gz
 ```
+
+##### 禁用笔记本键盘
+```bash
+xinput set-prop "AT Translated Set 2 keyboard" "Device Enabled" 0
+```
