@@ -29,3 +29,10 @@ tar -xzf xxx.tar.gz
 ```bash
 xinput set-prop "AT Translated Set 2 keyboard" "Device Enabled" 0
 ```
+
+
+##### mac添加path
+```bash
+sudo vim /etc/paths
+```
+在最后一行添加路径
