@@ -35,4 +35,9 @@ xinput set-prop "AT Translated Set 2 keyboard" "Device Enabled" 0
 ```bash
 sudo vim /etc/paths
 ```
-在最后一行添加路径
+> 在最后一行添加路径
+
+##### terminal proxy
+```bash
+export all_proxy=socks5://127.0.0.1:<port>
+```
