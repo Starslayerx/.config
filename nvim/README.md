@@ -5,6 +5,7 @@
 ```
 
 ### Coc Plug Notes
+- CocConfig
 ```json
 {
     "languageserver": {
