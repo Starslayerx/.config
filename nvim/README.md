@@ -34,3 +34,36 @@
     }
 }
 ```
+
+- coc-clangd
+```bash
+  {
+          "languageserver":
+          {
+                  "coc-clangd":
+                  {
+                          "command": "clangd",
+                          "rootPatterns": ["compile_flags.txt",
+                                          "compile_commands.json"],
+                          "filetypes":["c",
+                                          "cc",
+                                          "cpp",
+                                          "c++",
+                                          "objc",
+                                          "objcpp"]
+                  },
+                  "cmake":
+                  {
+                          "command": "cmake-language-server",
+                          "filetypes": ["cmake"],
+                          "rootPatterns": ["build/"],
+                          "initializationOptions":
+                          { 
+                                  "buildDirectory": "build"
+                          }
+                  }
+          }
+          
+  }
+
+```
