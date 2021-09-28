@@ -68,11 +68,10 @@
 
 ```
 
-### init.vim
-2021-09-28
+## init.vim
+2021-09-28 update
 ```vimscrpit
-
-```if exists('+termguicolors')
+if exists('+termguicolors')
   let &t_8f="\<Esc>[38;2;%lu;%lu;%lum"
   let &t_8b="\<Esc>[48;2;%lu;%lu;%lum"
   set termguicolors
@@ -211,3 +210,4 @@ autocmd CursorHold * silent call CocActionAsync('highlight')
 
 """ highlight
 let g:lsp_cxx_hl_use_text_props = 1
+```
