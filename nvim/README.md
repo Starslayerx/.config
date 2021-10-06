@@ -33,6 +33,14 @@
 同上，其中s是`substitue`的简写，会替换orgion文本为after  
 一般常使用`%`替换整个文本
 
+### 复制行
+复制命令为`:copy`，也可以简写为`:co`或`:t`
+```shell
+[range] copy {address}
+```
+
+
+
 ### Coc Plug Notes
 - CocConfig
 ```json
