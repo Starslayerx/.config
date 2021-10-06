@@ -11,9 +11,14 @@
 ```vim
 {start}, {end}p
 ```
-其中，start和end分别为开始与结束行，p会打印这些行  
+其中，start和end分别为开始与结束行，p是`print`的简写，会打印这些行  
 也可以使用`.`代表当前行，使用`%`打印全部行  
 
+### 替换文本
+```vim
+{start}, {end}s/{orgion}/{after}
+```
+同上，其中s是`substitue`的简写，会替换orgion文本为after
 
 ### Coc Plug Notes
 - CocConfig
