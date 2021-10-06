@@ -11,3 +11,6 @@ chsh -l
 ```shell
 chsh -l <shell-address>
 ```
+
+- 向前删除一个单词
+`<C-w>`
