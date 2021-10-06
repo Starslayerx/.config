@@ -39,9 +39,13 @@
 ### 复制行
 复制命令为`:copy`，也可以简写为`:co`或`:t`
 ```shell
-[range] copy {address}
+:[range] copy {address}
 ```
 
+### 移动行
+```
+:[range] move {address}
+```
 
 
 ### Coc Plug Notes
