@@ -62,74 +62,15 @@
   :%normal i//
   ```
   
-
-
-
-
-
-### Coc Plug Notes
-- CocConfig
-```json
-{
-    "languageserver": {
-        "ccls": {
-            "command": "ccls",
-            "filetypes": [
-                "c",
-                "cc",
-                "cpp",
-                "objc",
-                "objcpp"
-            ],
-            "rootPatterns": [
-                ".ccls",
-                "compile_commands.json",
-                ".vim/",
-                ".git/",
-                ".hg/"
-            ],
-            "initializationOptions": {
-                "cache": {
-                    "directory": "/tmp/ccls"
-                }
-            }
-        }
-    }
-}
+### 将单词插入命令行
+在命令模式下，使用该命令可以将光标下单词插入命令行中
+```vim
+<C-r><C-w>
 ```
 
-- coc-clangd
-```bash
-  {
-          "languageserver":
-          {
-                  "coc-clangd":
-                  {
-                          "command": "clangd",
-                          "rootPatterns": ["compile_flags.txt",
-                                          "compile_commands.json"],
-                          "filetypes":["c",
-                                          "cc",
-                                          "cpp",
-                                          "c++",
-                                          "objc",
-                                          "objcpp"]
-                  },
-                  "cmake":
-                  {
-                          "command": "cmake-language-server",
-                          "filetypes": ["cmake"],
-                          "rootPatterns": ["build/"],
-                          "initializationOptions":
-                          { 
-                                  "buildDirectory": "build"
-                          }
-                  }
-          }
-          
-  }
 
-```
+
+
 
 ## init.vim
 2021-09-28 update
@@ -273,4 +214,69 @@ autocmd CursorHold * silent call CocActionAsync('highlight')
 
 """ highlight
 let g:lsp_cxx_hl_use_text_props = 1
+```
+
+
+### Coc Plug Notes
+- CocConfig
+```json
+{
+    "languageserver": {
+        "ccls": {
+            "command": "ccls",
+            "filetypes": [
+                "c",
+                "cc",
+                "cpp",
+                "objc",
+                "objcpp"
+            ],
+            "rootPatterns": [
+                ".ccls",
+                "compile_commands.json",
+                ".vim/",
+                ".git/",
+                ".hg/"
+            ],
+            "initializationOptions": {
+                "cache": {
+                    "directory": "/tmp/ccls"
+                }
+            }
+        }
+    }
+}
+```
+
+- coc-clangd
+```bash
+  {
+          "languageserver":
+          {
+                  "coc-clangd":
+                  {
+                          "command": "clangd",
+                          "rootPatterns": ["compile_flags.txt",
+                                          "compile_commands.json"],
+                          "filetypes":["c",
+                                          "cc",
+                                          "cpp",
+                                          "c++",
+                                          "objc",
+                                          "objcpp"]
+                  },
+                  "cmake":
+                  {
+                          "command": "cmake-language-server",
+                          "filetypes": ["cmake"],
+                          "rootPatterns": ["build/"],
+                          "initializationOptions":
+                          { 
+                                  "buildDirectory": "build"
+                          }
+                  }
+          }
+          
+  }
+
 ```
