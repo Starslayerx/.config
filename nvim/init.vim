@@ -13,9 +13,15 @@
 " === System
 " ===
 "set clipboard=unnamedplus
+set foldcolumn=2
+set signcolumn="yes:3"
+
 let &t_ut=''
 set autochdir
 set encoding=utf-8
+
+"set nobackup
+"set nowritebackup
 
 
 " ===
@@ -38,7 +44,7 @@ set list
 set listchars=tab:\ \ ,trail:▫
 "set listchars=tab:\ \ ,trail:·
 "set listchars=tab:\|\ ,trail:▫
-set scrolloff=4
+set scrolloff=8
 set ttimeoutlen=0
 set notimeout
 set viewoptions=cursor,folds,slash,unix
@@ -256,6 +262,7 @@ func! CompileRunGcc()
 	exec "w"
 	if &filetype == 'c'
 		set splitbelow
+        :sp
 		:term gcc -ansi -Wall % -o a.out && time ./a.out
 		"term gcc -ansi -Wall % -o %< && time ./%<
     elseif &filetype == 'cpp'
@@ -310,12 +317,15 @@ endfunc
 call plug#begin('$HOME/.config/nvim/plugged')
 
 " Pretty Dress
-Plug 'theniceboy/nvim-deus'
+"Plug 'theniceboy/nvim-deus'
 Plug 'arcticicestudio/nord-vim'
 
 " Status line
 Plug 'Starslayerx/eleline.vim'
 Plug 'ojroques/vim-scrollstatus'
+
+" snippets
+Plug 'Starslayerx/vim-snippets'
 
 " tabline & visual enhancement
 Plug 'luochen1990/rainbow'
@@ -343,6 +353,7 @@ Plug 'tpope/vim-capslock'	" Ctrl+L (insert) to toggle capslock
 
 " code complete
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'dense-analysis/ale'
 
 " Snippets
 Plug 'SirVer/ultisnips'
@@ -385,6 +396,13 @@ hi NonText ctermfg=gray guifg=grey10
 " ===================== Start of Plugin Settings =====================
 
 " ===
+" === ale
+" ===
+let g:ale_sign_column_always = 1
+let g:ale_sign_error = "\uf467"
+let g:ale_sign_warning = "\uf071"
+
+" ===
 " === coc.nvim
 " ===
 let g:coc_global_extensions = [
@@ -420,11 +438,18 @@ let g:coc_global_extensions = [
 	\ 'coc-yank']
 
 let g:coc_disable_startup_warning = 1
+
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+
 function! s:check_back_space() abort
   let col = col('.') - 1
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
-let g:coc_snippet_next = '<tab>'
 
 inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm()
                               \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
@@ -438,15 +463,23 @@ nmap <silent> gr <Plug>(coc-references)
 " Symbol renaming.
 nmap <leader>rn <Plug>(coc-rename)
 
+" highlight
+autocmd CursorHold * silent call CocActionAsync('highlight')
 
-" snippets
+" Ultisnips
+"let g:coc_snippet_next = '<tab>'
+"let g:coc_snippet_prev = '<s-tab>'
+
+" coc-snippets
+imap <C-l> <Plug>(coc-snippets-expand)
+vmap <C-y> <Plug>(coc-snippets-select)
 let g:coc_snippet_next = '<tab>'
 let g:coc_snippet_prev = '<s-tab>'
+imap <C-e> <Plug>(coc-snippets-expand-jump)
+let g:snips_author = 'Starslayerx'
+autocmd BufRead,BufNewFile tsconfig.json set filetype=jsonc
 
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
-endfunction
+
 
 " explorer
 nmap tt <Cmd>CocCommand explorer<CR>
@@ -480,7 +513,7 @@ let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.8 } }
 " ===
 " === rainbow
 " ===
-let g:rainbow_active = 1
+let g:rainbow_active = 0
 
 
 " ===
