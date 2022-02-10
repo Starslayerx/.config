@@ -1,4 +1,4 @@
-" __  ____   __  _   ___	 _____ __  __ ____   ____
+" __  ____   __  _   ___     __ __ __  __ ____   ____
 "|  \/  \ \ / / | \ | \ \   / /_ _|  \/  |  _ \ / ___|
 "| |\/| |\ V /  |  \| |\ \ / / | || |\/| | |_) | |
 "| |  | | | |   | |\  | \ V /  | || |  | |  _ <| |___
@@ -13,15 +13,9 @@
 " === System
 " ===
 "set clipboard=unnamedplus
-set foldcolumn=2
-set signcolumn="yes:3"
-
 let &t_ut=''
 set autochdir
 set encoding=utf-8
-
-"set nobackup
-"set nowritebackup
 
 
 " ===
@@ -134,9 +128,9 @@ noremap <silent> K 5k
 noremap <silent> J 5j
 
 " H key: go to the start of the line
-noremap <silent> H 0
+noremap <silent> H I<ESC>l
 " L key: go to the end of the line
-noremap <silent> L $
+noremap <silent> L A<ESC>
 
 " Faster in-line navigation
 noremap W 5w
@@ -147,12 +141,16 @@ noremap <C-U> 5<C-y>
 noremap <C-E> 5<C-e>
 
 
-
 " ===
 " === Insert Mode Cursor Movement
 " ===
-inoremap <C-a> <ESC>A
-inoremap <C-j> <ESC>o
+inoremap <C-f> <ESC>A
+inoremap <C-l> <ESC>lli
+inoremap <C-h> <ESC>i
+
+
+
+
 
 " ===
 " === Command Mode Cursor Movement
@@ -166,40 +164,31 @@ cnoremap <C-f> <Right>
 cnoremap <M-b> <S-Left>
 cnoremap <M-w> <S-Right>
 
-" ===
-" === Searching
-" ===
-noremap - N
-noremap = n
-
 
 " ===
 " === Window management
 " ===
 " Use <space> + new arrow keys for moving the cursor around windows
-noremap <LEADER>w <C-w>w
-noremap <LEADER>k <C-w>k
-noremap <LEADER>j <C-w>j
-noremap <LEADER>h <C-w>h
-noremap <LEADER>l <C-w>l
+noremap mw <C-w>w
+noremap mk <C-w>k
+noremap mj <C-w>j
+noremap mh <C-w>h
+noremap ml <C-w>l
 noremap qf <C-w>o
 
-" Disable the default s key
-noremap s <nop>
-
 " split the screens to up (horizontal), down (horizontal), left (vertical), right (vertical)
-noremap sk :set nosplitbelow<CR>:split<CR>:set splitbelow<CR>
-noremap sj :set splitbelow<CR>:split<CR>
-noremap sh :set nosplitright<CR>:vsplit<CR>:set splitright<CR>
-noremap sl :set splitright<CR>:vsplit<CR>
+noremap <leader>k :set nosplitbelow<CR>:split<CR>:set splitbelow<CR>
+noremap <leader>j :set splitbelow<CR>:split<CR>
+noremap <leader>h :set nosplitright<CR>:vsplit<CR>:set splitright<CR>
+noremap <leader>l :set splitright<CR>:vsplit<CR>
 
 " Place the two screens up and down
-noremap ss <C-w>t<C-w>K
+noremap <leader>s <C-w>t<C-w>K
 " Place the two screens side by side
-noremap sv <C-w>t<C-w>H
+noremap <leader>v <C-w>t<C-w>H
 
 " Press <SPACE> + q to close the window below the current window
-noremap <LEADER>q <C-w>j:q<CR>
+noremap <leader>q <C-w>j:q<CR>
 
 
 
@@ -225,9 +214,6 @@ nnoremap \t :tabe<CR>:-tabmove<CR>:term sh -c 'st'<CR><C-\><C-N>:q<CR>
 
 " Opening a terminal window
 noremap <LEADER>/ :set splitbelow<CR>:split<CR>:res +10<CR>:term<CR>
-
-" Press space twice to jump to the next '<++>' and edit it
-noremap <LEADER><LEADER> <Esc>/<++><CR>:nohlsearch<CR>c4l
 
 " Spelling Check with <space>sc
 noremap <LEADER>sc :set spell!<CR>
@@ -457,7 +443,7 @@ inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm()
 " GoTo code navigation.
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
+"nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
 " Symbol renaming.
@@ -471,7 +457,7 @@ autocmd CursorHold * silent call CocActionAsync('highlight')
 "let g:coc_snippet_prev = '<s-tab>'
 
 " coc-snippets
-imap <C-l> <Plug>(coc-snippets-expand)
+"imap <C-l> <Plug>(coc-snippets-expand)
 vmap <C-y> <Plug>(coc-snippets-select)
 let g:coc_snippet_next = '<tab>'
 let g:coc_snippet_prev = '<s-tab>'
@@ -487,7 +473,7 @@ nmap tt <Cmd>CocCommand explorer<CR>
 " ===
 " === FZF
 " ===
-nnoremap <c-p> :Leaderf file<CR>
+nnoremap <c-p> :<c-u>FZF<CR>
 noremap <silent> <C-f> :Rg<CR>
 noremap <silent> <C-h> :History<CR>
 noremap <silent> <C-b> :Buffers<CR>
