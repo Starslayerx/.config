@@ -17,7 +17,6 @@ let &t_ut=''
 set autochdir
 set encoding=utf-8
 
-
 " ===
 " === Editor behavior
 " ===
@@ -100,11 +99,8 @@ noremap S :w<CR>
 noremap <LEADER>rc :e $HOME/.config/nvim/init.vim<CR>
 noremap <LEADER>rv :e .nvimrc<CR>
 
-" make Y to copy till the end of the line
-nnoremap Y y$
-
-" Copy to system clipboard
-vnoremap Y "+y
+" Make Y copy to system clipboard
+noremap Y ggVG"+y
 
 " Indentation
 nnoremap < <<
@@ -145,9 +141,10 @@ noremap <C-E> 5<C-e>
 " === Insert Mode Cursor Movement
 " ===
 inoremap <C-f> <ESC>A
-inoremap <C-l> <ESC>lli
-inoremap <C-h> <ESC>i
-
+inoremap <C-l> <ESC>la
+"inoremap <C-h> <ESC>i
+inoremap <C-b> <ESC>i
+inoremap <C-j> <ESC>Ji
 
 
 
@@ -407,6 +404,7 @@ let g:coc_global_extensions = [
 	\ 'coc-stylelint',
 	\ 'coc-tsserver',
 	\ 'coc-vetur',
+    \ 'coc-sourcekit',
     \
 	\ 'coc-syntax',
 	\ 'coc-tasks',
