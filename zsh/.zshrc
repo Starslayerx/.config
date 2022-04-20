@@ -72,7 +72,7 @@ WORDCHARS=${WORDCHARS//[\/]}
 
 # Customize the style that the suggestions are shown with.
 # See https://github.com/zsh-users/zsh-autosuggestions/blob/master/README.md#suggestion-highlight-style
-#ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=10'
+#ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=242'
 
 #
 # zsh-syntax-highlighting
@@ -85,14 +85,14 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
 # Customize the main highlighter styles.
 # See https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters/main.md#how-to-tweak-it
 #typeset -A ZSH_HIGHLIGHT_STYLES
-#ZSH_HIGHLIGHT_STYLES[comment]='fg=10'
+#ZSH_HIGHLIGHT_STYLES[comment]='fg=242'
 
 # ------------------
 # Initialize modules
 # ------------------
 
-if [[ ${ZIM_HOME}/init.zsh -ot ${ZDOTDIR:-${HOME}}/.zimrc ]]; then
-  # Update static initialization script if it's outdated, before sourcing it
+if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZDOTDIR:-${HOME}}/.zimrc ]]; then
+  # Update static initialization script if it does not exist or it's outdated, before sourcing it
   source ${ZIM_HOME}/zimfw.zsh init -q
 fi
 source ${ZIM_HOME}/init.zsh
@@ -123,32 +123,60 @@ bindkey -M vicmd 'j' history-substring-search-down
 # }}} End configuration added by Zim install
 
 
-# didn't add config docs like zimfw or conda.
-# just config for mywon use
-# If u noticed this, don't think/do anything to my server :D
-alias ssh-aliyun="ssh root@120.26.176.198"
-alias ssr-h="export http_proxy=http://127.0.0.1:12333"
-alias ssr-hs="export https_proxy=http://127.0.0.1:12333"
-alias ssr-git="git config --global http.proxy 'socks5://127.0.0.1:1080'"
-alias ssr-gits="git config --global https.proxy 'socks5://127.0.0.1:1080'"
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/starslayerx/mambaforge/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/starslayerx/mambaforge/etc/profile.d/conda.sh" ]; then
+        . "/Users/starslayerx/mambaforge/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/starslayerx/mambaforge/bin:$PATH"
+    fi
+fi
+unset __conda_setup
 
-alias r='ranger'
-alias c='clear'
-alias s='neofetch'
-alias vim='nvim'
-alias matlab='sudo /usr/local/MATLAB/R2018b/bin/matlab'
-alias rs="realsense-viewer"
+if [ -f "/Users/starslayerx/mambaforge/etc/profile.d/mamba.sh" ]; then
+    . "/Users/starslayerx/mambaforge/etc/profile.d/mamba.sh"
+fi
+# <<< conda initialize <<<
+
+alias pc="proxychains4"
+alias setproxy="export all_proxy=socks5://127.0.0.1:4781"
+alias unsetproxy="unset all_proxy"
+alias v="nvim"
+alias g++="g++ --std=c++11"
+alias clang++="clang++ --std=c++11"
+alias c="clear"
+alias r="ranger"
+alias f="fg"
+alias s="neofetch"
+
+export PATH="/usr/local/mysql/bin:$PATH"
+export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+export PATH="/Users/starslayerx/GitHub/lua-language-server/bin:$PATH"
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
+export PATH="/usr/local/go/bin:$PATH"
 
 
-export EDITOR="nvim"
-export VISUAL="nvim"
-export PATH=$PATH:/home/starslayerx/.local/bin
-export PATH=$PATH:/usr/local/go/bin
-export WORKON_HOME=$HOME/.virtualenvs
-export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
-export BAT_THEME="Nord"
+export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include"
+export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
+export HOMEBREW_BOTTLE_DOMAIN=http://mirrors.aliyun.com/homebrew/homebrew-bottles
 
-# JetsonNano Config
-# ssh sx@192.168.55.1
-# 192.168.55.1:8888
-# password::    dlinano
+alias luamake=/Users/starslayerx/lua-language-server/3rd/luamake/luamake
+
+export PATH="/opt/homebrew/opt/curl/bin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/curl/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/curl/include"
+export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig"
+export TOOLCHAINS=swift
+
+# py3.8 for deeplearning
+conda activate new_env
+
+# nvim for default editor
+export VISUAL=nvim
+export EDITOR=nvim
