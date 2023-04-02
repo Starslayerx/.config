@@ -20,6 +20,7 @@ set encoding=utf-8
 " ===
 " === Editor behavior
 " ===
+set signcolumn=yes " 左侧一直显示(给提示内容留位置) "
 set exrc
 set secure
 set number
@@ -47,7 +48,7 @@ set indentexpr=
 set foldmethod=indent
 set foldlevel=99
 set foldenable
-set formatoptions-=tc
+autocmd FileType * setlocal formatoptions-=cro " 禁用自动注释 "
 set splitright
 set splitbelow
 set noshowmode
@@ -61,6 +62,11 @@ set completeopt=longest,noinsert,menuone,noselect,preview
 set ttyfast "should make scrolling faster
 set lazyredraw "same as above
 set visualbell
+
+" 禁用交换文件
+set nobackup
+set nowritebackup
+set noswapfile
 
 silent !mkdir -p $HOME/.config/nvim/tmp/backup
 silent !mkdir -p $HOME/.config/nvim/tmp/undo
@@ -144,7 +150,6 @@ inoremap <C-f> <ESC>A
 inoremap <C-l> <ESC>la
 "inoremap <C-h> <ESC>i
 inoremap <C-b> <ESC>i
-inoremap <C-j> <ESC>Ji
 
 
 
@@ -336,7 +341,7 @@ Plug 'tpope/vim-capslock'	" Ctrl+L (insert) to toggle capslock
 
 " code complete
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'dense-analysis/ale'
+"Plug 'dense-analysis/ale'
 
 " Snippets
 Plug 'SirVer/ultisnips'
@@ -346,7 +351,6 @@ Plug 'fatih/vim-go' , { 'for': ['go', 'vim-plug'], 'tag': '*' }
 
 " Python
 Plug 'Vimjas/vim-python-pep8-indent', { 'for' :['python', 'vim-plug'] } " pep8 style py
-Plug 'numirias/semshi', { 'do': ':UpdateRemotePlugins', 'for' :['python', 'vim-plug'] } " py better highlight
 
 call plug#end()
 
@@ -364,7 +368,7 @@ let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 "let g:one_allow_italics = 1
 
 color nord
-" color deus
+"color deus
 "color gruvbox
 "let ayucolor="light"
 "color ayu
@@ -381,9 +385,9 @@ hi NonText ctermfg=gray guifg=grey10
 " ===
 " === ale
 " ===
-let g:ale_sign_column_always = 1
-let g:ale_sign_error = "\uf467"
-let g:ale_sign_warning = "\uf071"
+"let g:ale_sign_column_always = 1
+"let g:ale_sign_error = "\uf467"
+"let g:ale_sign_warning = "\uf071"
 
 " ===
 " === coc.nvim
@@ -451,14 +455,15 @@ nmap <leader>rn <Plug>(coc-rename)
 autocmd CursorHold * silent call CocActionAsync('highlight')
 
 " Ultisnips
-"let g:coc_snippet_next = '<tab>'
-"let g:coc_snippet_prev = '<s-tab>'
+let g:UltiSnipsExpandTrigger="<c-j>"
+let g:UltiSnipsJumpForwardTrigger="<tab>"
+let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
 
 " coc-snippets
 "imap <C-l> <Plug>(coc-snippets-expand)
 vmap <C-y> <Plug>(coc-snippets-select)
-let g:coc_snippet_next = '<tab>'
-let g:coc_snippet_prev = '<s-tab>'
+let g:coc_snippet_next = '<Nul>'
+let g:coc_snippet_prev = '<Nul>'
 imap <C-e> <Plug>(coc-snippets-expand-jump)
 let g:snips_author = 'Starslayerx'
 autocmd BufRead,BufNewFile tsconfig.json set filetype=jsonc
@@ -565,3 +570,8 @@ let g:nordcolor_aurora5 = '#B48EAD'
 " === Necessary Commands to Execute
 " ===
 exec "nohlsearch"
+
+
+" opacity 透明
+autocmd vimenter * hi Normal guibg=NONE ctermbg=NONE " transparent bg
+
