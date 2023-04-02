@@ -1,0 +1,1 @@
+- 再mac中切换窗口使用`Command+Tab'，若窗口已经被最小化，则无法调出，松掉`Tab`再按`Option`然后松掉`Command`，最小化窗口即可显示
