@@ -468,6 +468,8 @@ nmap <leader>rn <Plug>(coc-rename)
 autocmd CursorHold * silent call CocActionAsync('highlight')
 
 " Ultisnips
+let g:UltiSnipsEnableSnipMate = 1 " 开启ultisnips插件
+let g:UltiSnipsSnippetDirectories=["~/.config/nvim/UltiSnips"]
 let g:UltiSnipsExpandTrigger="<c-j>"
 let g:UltiSnipsJumpForwardTrigger="<tab>"
 let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
