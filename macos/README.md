@@ -1,1 +1,1 @@
-- 在mac中切换窗口使用`Command+Tab`，若窗口已经被最小化，则无法调出，松掉`Tab`再按`Option`然后松掉`Command`，最小化窗口即可显示
+- 在mac中切换窗口使用`Command+Tab`，若窗口已经被最小化，则无法调出，松掉`Tab`再按`Option`然后松掉`Command`，最小化窗口即可显示(建议把`fn`小地球和`option`交换，否则`option`很难按到，`fn`位置可以用小拇指按住)
