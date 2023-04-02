@@ -1,3 +1,4 @@
+-- Impatient加速启动速度
 local impatient_ok, impatient = pcall(require, "impatient")
 if impatient_ok then impatient.enable_profile() end
 
@@ -5,7 +6,7 @@ for _, source in ipairs {
   "core.utils",
   "core.options",
   "core.bootstrap",
-  "core.plugins",
+  "core.diagnostics",
   "core.autocmds",
   "core.mappings",
   "configs.which-key-register",
@@ -16,6 +17,18 @@ end
 
 astronvim.conditional_func(astronvim.user_plugin_opts("polish", nil, false))
 
+-- 检查是否支持AstroNvim
 if vim.fn.has "nvim-0.8" ~= 1 or vim.version().prerelease then
   vim.schedule(function() astronvim.notify("Unsupported Neovim Version! Please check the requirements", "error") end)
 end
+
+------------------------------------------------------------------------------------------
+                          -- MY PERSONAL CONFIGURATION --
+------------------------------------------------------------------------------------------
+-- 始终显示左侧列
+vim.o.signcolumn = 'yes'
+-- 自动隐藏左侧列
+-- vim.o.signcolumn = 'auto'
+-- 固定左侧列宽度
+-- vim.o.signcolumn = 'number'
+-- vim.o.numberwidth = 1
