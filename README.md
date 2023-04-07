@@ -41,3 +41,7 @@ sudo vim /etc/paths
 ```bash
 export all_proxy=socks5://127.0.0.1:<port>
 ```
+
+##### ubuntu源更新后update失败
+1. 检查自己是否为arm，arm系列要使用ubuntu port源
+2. 检查源连接是否为https，若为https要先安装`apt-transport-https`和`ca-certificates`这两个包
