@@ -31,9 +31,6 @@ set expandtab
 set tabstop=4
 set shiftwidth=4
 set softtabstop=4
-set smartindent
-"set autoindent
-"set cindent
 set list
 set listchars=tab:\ \ ,trail:▫
 "set listchars=tab:\ \ ,trail:·
@@ -44,7 +41,6 @@ set notimeout
 set viewoptions=cursor,folds,slash,unix
 set wrap
 set tw=0
-set indentexpr=
 set foldmethod=indent
 set foldlevel=99
 set foldenable
@@ -67,6 +63,16 @@ set visualbell
 set nobackup
 set nowritebackup
 set noswapfile
+
+" 回车后最前端给补上Tab缩进
+set autoindent
+
+" 禁用智能缩进
+set nosmartindent
+
+" 禁用c语言缩进
+set nocindent
+set indentexpr=
 
 silent !mkdir -p $HOME/.config/nvim/tmp/backup
 silent !mkdir -p $HOME/.config/nvim/tmp/undo
@@ -244,59 +250,59 @@ function! SynGroup()
 endfun
 map <F10> :call SynGroup()<CR>
 
-" Compile function
-noremap <leader>t :call CompileRunGcc()<CR>
-func! CompileRunGcc()
-	exec "w"
-	if &filetype == 'c'
-		set splitbelow
-        :sp
-		:term gcc -ansi -Wall % -o a.out && time ./a.out
-		"term gcc -ansi -Wall % -o %< && time ./%<
-    elseif &filetype == 'cpp'
-		set splitbelow
-		exec "!g++ -std=c++11 % -Wall -o a.out"
-		"exec "!g++ -std=c++11 % -Wall -o %<"
-		:sp
-		":res -8
-		:term ./a.out
-	elseif &filetype == 'cs'
-		set splitbelow
-		silent! exec "!mcs %"
-		:sp
-		:res -5
-		:term mono %<.exe
-	elseif &filetype == 'java'
-		set splitbelow
-		:sp
-		:res -5
-		term javac % && time java %<
-	elseif &filetype == 'sh'
-		:!time bash %
-	elseif &filetype == 'python'
-		set splitbelow
-		:sp
-		:term python3 %
-	elseif &filetype == 'html'
-		silent! exec "!".g:mkdp_browser." % &"
-	elseif &filetype == 'markdown'
-		exec "InstantMarkdownPreview"
-	elseif &filetype == 'tex'
-		silent! exec "VimtexStop"
-		silent! exec "VimtexCompile"
-	elseif &filetype == 'dart'
-		exec "CocCommand flutter.run -d ".g:flutter_default_device." ".g:flutter_run_args
-		silent! exec "CocCommand flutter.dev.openDevLog"
-	elseif &filetype == 'javascript'
-		set splitbelow
-		:sp
-		:term export DEBUG="INFO,ERROR,WARNING"; node --trace-warnings .
-	elseif &filetype == 'go'
-		set splitbelow
-		:sp
-		:term go run .
-	endif
-endfunc
+"" Compile function
+"noremap <leader>t :call CompileRunGcc()<CR>
+"func! CompileRunGcc()
+"	exec "w"
+"	if &filetype == 'c'
+"		set splitbelow
+"        :sp
+"		:term gcc -ansi -Wall % -o a.out && time ./a.out
+"		"term gcc -ansi -Wall % -o %< && time ./%<
+"    elseif &filetype == 'cpp'
+"		set splitbelow
+"		exec "!g++ -std=c++11 % -Wall -o a.out"
+"		"exec "!g++ -std=c++11 % -Wall -o %<"
+"		:sp
+"		":res -8
+"		:term ./a.out
+"	elseif &filetype == 'cs'
+"		set splitbelow
+"		silent! exec "!mcs %"
+"		:sp
+"		:res -5
+"		:term mono %<.exe
+"	elseif &filetype == 'java'
+"		set splitbelow
+"		:sp
+"		:res -5
+"		term javac % && time java %<
+"	elseif &filetype == 'sh'
+"		:!time bash %
+"	elseif &filetype == 'python'
+"		set splitbelow
+"		:sp
+"		:term python3 %
+"	elseif &filetype == 'html'
+"		silent! exec "!".g:mkdp_browser." % &"
+"	elseif &filetype == 'markdown'
+"		exec "InstantMarkdownPreview"
+"	elseif &filetype == 'tex'
+"		silent! exec "VimtexStop"
+"		silent! exec "VimtexCompile"
+"	elseif &filetype == 'dart'
+"		exec "CocCommand flutter.run -d ".g:flutter_default_device." ".g:flutter_run_args
+"		silent! exec "CocCommand flutter.dev.openDevLog"
+"	elseif &filetype == 'javascript'
+"		set splitbelow
+"		:sp
+"		:term export DEBUG="INFO,ERROR,WARNING"; node --trace-warnings .
+"	elseif &filetype == 'go'
+"		set splitbelow
+"		:sp
+"		:term go run .
+"	endif
+"endfunc
 
 " ===
 " === Install Plugins with Vim-Plug
@@ -339,9 +345,14 @@ Plug 'junegunn/vim-after-object' " da= to delete what's after =
 Plug 'godlygeek/tabular' " ga, or :Tabularize <regex> to align
 Plug 'tpope/vim-capslock'	" Ctrl+L (insert) to toggle capslock
 
-" code complete
+" Code Complete
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
 "Plug 'dense-analysis/ale'
+
+" Code Formatter
+" post install (yarn install | npm install) then load plugin only for editing supported files
+Plug 'prettier/vim-prettier', { 'do': 'yarn install --frozen-lockfile --production' }
 
 " Snippets
 Plug 'SirVer/ultisnips'
@@ -415,7 +426,6 @@ let g:coc_global_extensions = [
     \
 	\ 'coc-syntax',
 	\ 'coc-tasks',
-	\ 'coc-prettier',
 	\ 'coc-explorer',
 	\ 'coc-diagnostic',
 	\ 'coc-gitignore',
@@ -427,7 +437,6 @@ let g:coc_global_extensions = [
     \
 	\ 'coc-yaml',
 	\ 'coc-yank']
-
 let g:coc_disable_startup_warning = 1
 
 inoremap <silent><expr> <TAB>
@@ -483,10 +492,21 @@ imap <C-e> <Plug>(coc-snippets-expand-jump)
 let g:snips_author = 'Starslayerx'
 autocmd BufRead,BufNewFile tsconfig.json set filetype=jsonc
 
-
-
 " explorer
 nmap tt <Cmd>CocCommand explorer<CR>
+
+" ===
+" === Prettier Config
+" ===
+au FileType css,scss let b:prettier_exec_cmd = "prettier-stylelint"
+nmap ff <Plug>(Prettier)
+let g:prettier#autoformat = 1
+let g:prettier#autoformat_require_pragma = 0
+" 保存时自动格式化
+" augroup fmt
+"   autocmd!
+"   autocmd BufWritePre *.js,*.ts,*.jsx,*.tsx,*.vue,*.ejs,*.pug,*.css,*.scss,*.html,*.json,*.md :PrettierAsync
+" augroup end
 
 " ===
 " === FZF
@@ -564,10 +584,19 @@ let g:terminal_color_12 = '#CAA9FA'
 let g:terminal_color_13 = '#FF92D0'
 let g:terminal_color_14 = '#9AEDFE'
 
+
+
+
+
+" let g:nordcolor_polar_night1 = '#597D8B'
+" let g:nordcolor_polar_night2 = '#6D919F'
+" let g:nordcolor_polar_night3 = '#81A5B3'
+" let g:nordcolor_polar_night4 = '#95B9C7'
 let g:nordcolor_polar_night1 = '#2E3440'
 let g:nordcolor_polar_night2 = '#3B4252'
 let g:nordcolor_polar_night3 = '#434C5E'
 let g:nordcolor_polar_night4 = '#4C566A'
+
 let g:nordcolor_snow1 = '#D8DEE9'
 let g:nordcolor_snow2 = '#E5E9F0'
 let g:nordcolor_snow3 = '#ECEFF4'
