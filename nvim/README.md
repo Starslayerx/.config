@@ -1,3 +1,16 @@
+# Update Log
+
+- 2023:05:17
+
+编写django项目代码时`coc-settings.json`修改添加以下代码，目前看来是nvim lsp或者coc.nvim的bug，因为同为pyright，而vscode没有问题。  
+安装`django-stubs`没有解决问题  
+```json
+// 关闭的模型检查, django的数据模型导入后无法识别, nvim lsp有bug(都是pyright, vscode没问题)
+"python.analysis.typeCheckingMode": "off",
+```
+
+------------------
+
 ### 高亮重复出现的单词
 将光标放到该单词上，按`*`即可
 
