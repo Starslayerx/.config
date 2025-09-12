@@ -203,7 +203,7 @@ nvim
 - **替代**：neoclide/coc.nvim
 - **包含服务器**：
   - lua_ls (Lua)
-  - tsserver (TypeScript/JavaScript)
+  - ts_ls (TypeScript/JavaScript)
   - pyright (Python)
   - html, cssls (Web)
   - jsonls, yamlls (配置文件)
@@ -214,7 +214,7 @@ nvim
   - `gr`: 查找引用
   - `gy`: 跳转到类型定义
   - `<Leader>rn`: 重命名
-  - `K`: 显示悬浮文档
+  - `gh`: 显示悬浮文档
   - `<Tab>`: 选择下一个补全项
   - `<S-Tab>`: 选择上一个补全项
   - `<CR>`: 确认补全
