@@ -1,0 +1,24 @@
+# 字体
+font-family = "Hack Nerd Font Mono"
+font-family-bold = "Hack Nerd Font Mono Bold"
+font-family-italic = "Hack Nerd Font Mono Italic"
+font-family-bold-italic = "Hack Nerd Font Mono Bold Italic"
+font-size = 18
+
+# 主题
+theme = dark:Nord,light:Iceberg Light
+background-opacity = 0.9
+background-blur = true
+
+# 窗口
+window-theme = auto
+window-height = 33
+window-width = 99
+window-position-x = 180
+window-position-y = -60
+
+# 光标
+cursor-opacity = 1
+cursor-style-blink = true
+shell-integration-features = no-cursor
+cursor-style = bar
