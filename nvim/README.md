@@ -32,4 +32,4 @@ m{letter}     # 添加标签
 - `<leader>e`: 打开文件树（更多功能查看 `lua/plugin/tool.lua` 的注释）
 
 ### neovim 分屏切换
-- `C-w` + `h/j/k/l/p`: h,j,k,l 选择方向，p 回到上一个分屏
+- `C-h/j/k/l`: 切换分配，终端模式下先要`Esc`退出，进入普通模式
