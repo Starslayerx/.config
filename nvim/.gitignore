@@ -1,0 +1,9 @@
+# 忽略所有文件
+*
+
+# 保留配置文件
+!.gitignore
+!init.lua
+!lua/
+!lua/**
+!stylua.toml
