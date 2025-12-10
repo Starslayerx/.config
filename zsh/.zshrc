@@ -30,18 +30,16 @@ bindkey -e
 # Remove path separator from WORDCHARS.
 WORDCHARS=${WORDCHARS//[\/]}
 
+# -----------------
+# Zim configuration
+# -----------------
+
+# Use degit instead of git as the default tool to install and update modules.
+#zstyle ':zim:zmodule' use 'degit'
 
 # --------------------
 # Module configuration
 # --------------------
-
-#
-# completion
-#
-
-# Set a custom path for the completion dump file.
-# If none is provided, the default ${ZDOTDIR:-${HOME}}/.zcompdump is used.
-#zstyle ':zim:completion' dumpfile "${ZDOTDIR:-${HOME}}/.zcompdump-${ZSH_VERSION}"
 
 #
 # git
@@ -70,6 +68,10 @@ WORDCHARS=${WORDCHARS//[\/]}
 # zsh-autosuggestions
 #
 
+# Disable automatic widget re-binding on each precmd. This can be set when
+# zsh-users/zsh-autosuggestions is the last module in your ~/.zimrc.
+ZSH_AUTOSUGGEST_MANUAL_REBIND=1
+
 # Customize the style that the suggestions are shown with.
 # See https://github.com/zsh-users/zsh-autosuggestions/blob/master/README.md#suggestion-highlight-style
 #ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=242'
@@ -91,10 +93,22 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
 # Initialize modules
 # ------------------
 
+ZIM_HOME=${ZDOTDIR:-${HOME}}/.zim
+# Download zimfw plugin manager if missing.
+if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
+  if (( ${+commands[curl]} )); then
+    curl -fsSL --create-dirs -o ${ZIM_HOME}/zimfw.zsh \
+        https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
+  else
+    mkdir -p ${ZIM_HOME} && wget -nv -O ${ZIM_HOME}/zimfw.zsh \
+        https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
+  fi
+fi
+# Install missing modules, and update ${ZIM_HOME}/init.zsh if missing or outdated.
 if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZDOTDIR:-${HOME}}/.zimrc ]]; then
-  # Update static initialization script if it does not exist or it's outdated, before sourcing it
   source ${ZIM_HOME}/zimfw.zsh init -q
 fi
+# Initialize modules.
 source ${ZIM_HOME}/init.zsh
 
 # ------------------------------
@@ -105,78 +119,152 @@ source ${ZIM_HOME}/init.zsh
 # zsh-history-substring-search
 #
 
-# Bind ^[[A/^[[B manually so up/down works both before and after zle-line-init
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down
-
-# Bind up and down keys
 zmodload -F zsh/terminfo +p:terminfo
-if [[ -n ${terminfo[kcuu1]} && -n ${terminfo[kcud1]} ]]; then
-  bindkey ${terminfo[kcuu1]} history-substring-search-up
-  bindkey ${terminfo[kcud1]} history-substring-search-down
-fi
-
-bindkey '^P' history-substring-search-up
-bindkey '^N' history-substring-search-down
-bindkey -M vicmd 'k' history-substring-search-up
-bindkey -M vicmd 'j' history-substring-search-down
+# Bind ^[[A/^[[B manually so up/down works both before and after zle-line-init
+for key ('^[[A' '^P' ${terminfo[kcuu1]}) bindkey ${key} history-substring-search-up
+for key ('^[[B' '^N' ${terminfo[kcud1]}) bindkey ${key} history-substring-search-down
+for key ('k') bindkey -M vicmd ${key} history-substring-search-up
+for key ('j') bindkey -M vicmd ${key} history-substring-search-down
+unset key
 # }}} End configuration added by Zim install
 
+# >>> Homebrew Apple Silicon shell env
+eval "$(/opt/homebrew/bin/brew shellenv)"
+# <<<
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/Users/starslayerx/mambaforge/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/Users/starslayerx/mambaforge/etc/profile.d/conda.sh" ]; then
-        . "/Users/starslayerx/mambaforge/etc/profile.d/conda.sh"
-    else
-        export PATH="/Users/starslayerx/mambaforge/bin:$PATH"
-    fi
-fi
-unset __conda_setup
+# PATH 扩展
+export PATH="/usr/local/mysql/bin:$PATH"
+export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
+export PATH="/opt/homebrew/opt/curl/bin:$PATH"
+export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+export PATH="/Library/Frameworks/Python.framework/Versions/3.12/bin:$PATH"
+export PATH="~/.local/bin/:$PATH"
 
-if [ -f "/Users/starslayerx/mambaforge/etc/profile.d/mamba.sh" ]; then
-    . "/Users/starslayerx/mambaforge/etc/profile.d/mamba.sh"
-fi
-# <<< conda initialize <<<
+# 编译器/开发环境配置
+export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include -I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/curl/include"
+export LDFLAGS="-L/opt/homebrew/opt/llvm/lib -L/opt/homebrew/opt/curl/lib"
+export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig"
 
+# pg
+export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
+# export CPPFLAGS="-I/opt/homebrew/opt/postgresql@17/include"
+# export LDFLAGS="-L/opt/homebrew/opt/postgresql@17/lib"
+
+# Toolchain
+export TOOLCHAINS=swift
+
+# Editor
+export VISUAL=nvim
+export EDITOR=nvim
+
+# 代理 alias
 alias pc="proxychains4"
-alias setproxy="export all_proxy=socks5://127.0.0.1:4781"
-alias unsetproxy="unset all_proxy"
+
+# 开启代理
+alias setproxy="export all_proxy=socks5://127.0.0.1:7897; \
+                export http_proxy=http://127.0.0.1:7897; \
+                export https_proxy=http://127.0.0.1:7897"
+alias set_git_proxy="git config --global http.proxy http://127.0.0.1:7897 && git config --global https.proxy http://127.0.0.1:7897"
+
+# 关闭代理
+alias unsetproxy="unset all_proxy http_proxy https_proxy"
+alias unset_git_proxy="git config --global --unset http.proxy && git config --global --unset https.proxy"
+
+
+# Git 代理
+alias git_proxy_http="git config --global http.proxy 'http://192.168.0.1:7897'"
+alias git_proxy_https="git config --global http.proxy 'https://192.168.0.1:7897'"
+alias git_proxy_socks="git config --global http.proxy 'socks5://127.0.0.1:7897'"
+alias git_unset_http_proxy="git config --global --unset http.proxy"
+alias git_unset_https_proxy="git config --global --unset https.proxy"
+
+# Homebrew 镜像源（清华）
+export HOMEBREW_API_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api"
+export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
+export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git"
+export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git"
+export HOMEBREW_PIP_INDEX_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
+
+# 常用 alias
+alias brew="arch -arm64 brew"
 alias v="nvim"
 alias g++="g++ --std=c++11"
 alias clang++="clang++ --std=c++11"
 alias c="clear"
-alias r="ranger"
 alias f="fg"
-alias s="neofetch"
+alias s="fastfetch"
 
-export PATH="/usr/local/mysql/bin:$PATH"
-export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
-export PATH="/Users/starslayerx/GitHub/lua-language-server/bin:$PATH"
-export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
-export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
-export PATH="/usr/local/go/bin:$PATH"
+alias gs="git log --graph --oneline --all --decorate"
+
+# rust alternatives
+# alias ls="exa"
+# alias grep="rg"
+# alias cat="bat"
+# alias find="fd"
+# alias cd="z"
+# alias top="btm"
+# alias ps="procs"
 
 
-export CPPFLAGS="-I/opt/homebrew/opt/openjdk/include"
-export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
-export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
-export HOMEBREW_BOTTLE_DOMAIN=http://mirrors.aliyun.com/homebrew/homebrew-bottles
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/starslayerx/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/starslayerx/miniconda3/etc/profile.d/conda.sh" ]; then
+        . "/Users/starslayerx/miniconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/starslayerx/miniconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
 
-alias luamake=/Users/starslayerx/lua-language-server/3rd/luamake/luamake
 
-export PATH="/opt/homebrew/opt/curl/bin:$PATH"
-export LDFLAGS="-L/opt/homebrew/opt/curl/lib"
-export CPPFLAGS="-I/opt/homebrew/opt/curl/include"
-export PKG_CONFIG_PATH="/opt/homebrew/opt/curl/lib/pkgconfig"
-export TOOLCHAINS=swift
+# Django commadns
+alias run_server='python manage.py runserver 0.0.0.0:80'
 
-# py3.8 for deeplearning
-conda activate new_env
+# LLM Server
+alias ssh_llm_server='ssh -i ~/Downloads/tbyf/acoi3xj2jc_cancon.hpccube.com_RsaKeyExpireTime_2025-07-09_12-04-54.txt -p 65023 acoi3xj2jc@cancon.hpccube.com'
 
-# nvim for default editor
-export VISUAL=nvim
-export EDITOR=nvim
+
+# zsh Chinese
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+# python
+alias python=python3
+
+# export PYENV_ROOT="$HOME/.pyenv"
+# [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+# eval "$(pyenv init - bash)"
+
+. "$HOME/.local/bin/env"
+UV_PYTHON=/Library/Frameworks/Python.framework/Versions/3.12/bin/python3
+
+# Command to chang arch to arm64
+# arch -arm64 $SHELL
+
+# add sqlite into path
+export PATH="/opt/homebrew/opt/sqlite/bin:$PATH"
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/starslayerx/.docker/completions $fpath)
+autoload -Uz compinit
+compinit
+# End of Docker CLI completions
+
+fpath+=${ZDOTDIR:-~}/.zsh_functions
+
+# zoxide replace cd
+eval "$(zoxide init zsh)"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# Mac OS alias
+alias typora='open -a Typora'
+alias wps='open -a wpsoffice'
