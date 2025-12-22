@@ -227,10 +227,6 @@ unset __conda_setup
 # Django commadns
 alias run_server='python manage.py runserver 0.0.0.0:80'
 
-# LLM Server
-alias ssh_llm_server='ssh -i ~/Downloads/tbyf/acoi3xj2jc_cancon.hpccube.com_RsaKeyExpireTime_2025-07-09_12-04-54.txt -p 65023 acoi3xj2jc@cancon.hpccube.com'
-
-
 # zsh Chinese
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
@@ -268,3 +264,6 @@ export NVM_DIR="$HOME/.nvm"
 # Mac OS alias
 alias typora='open -a Typora'
 alias wps='open -a wpsoffice'
+
+# Tmux 智能启动
+alias tm='~/.local/bin/tmux-smart-start.sh'
