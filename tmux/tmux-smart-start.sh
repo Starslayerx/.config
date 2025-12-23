@@ -8,8 +8,70 @@ SESSION_NAME="$1"
 RESURRECT_DIR="$HOME/.local/share/tmux/resurrect"
 LAST_SAVE="$RESURRECT_DIR/last"
 
-# 恢复保存的 session 函数
-restore_sessions() {
+# 从快照文件中手动恢复单个 session（不影响其他 session）
+restore_single_session() {
+    local snapshot_file="$1"
+    local target_session="$2"
+
+    if [ ! -f "$snapshot_file" ]; then
+        return 1
+    fi
+
+    echo "正在从快照中恢复 session '$target_session'..."
+
+    # 检查快照中是否有该 session
+    if ! grep -q "^state.*$target_session" "$snapshot_file"; then
+        echo "错误：快照中不包含 session '$target_session'"
+        return 1
+    fi
+
+    # 提取该 session 的窗口信息
+    local windows=$(grep "^window[[:space:]]\\+$target_session[[:space:]]" "$snapshot_file")
+
+    if [ -z "$windows" ]; then
+        echo "错误：无法从快照中提取窗口信息"
+        return 1
+    fi
+
+    # 创建 session（使用第一个窗口的信息）
+    local first_pane=$(grep "^pane[[:space:]]\\+$target_session[[:space:]]\\+0[[:space:]]" "$snapshot_file" | head -1)
+    local work_dir=$(echo "$first_pane" | awk -F'\t' '{print $8}' | sed 's/^://')
+
+    if [ -z "$work_dir" ] || [ ! -d "$work_dir" ]; then
+        work_dir="$HOME"
+    fi
+
+    # 创建新 session
+    tmux new-session -d -s "$target_session" -c "$work_dir"
+
+    # 恢复所有窗口
+    local window_index=0
+    while IFS=$'\t' read -r _ session_name win_idx window_name active _ _; do
+        if [ "$win_idx" != "0" ]; then
+            # 为非第一个窗口创建新窗口
+            local pane_info=$(grep "^pane[[:space:]]\\+$target_session[[:space:]]\\+$win_idx[[:space:]]" "$snapshot_file" | head -1)
+            local pane_dir=$(echo "$pane_info" | awk -F'\t' '{print $8}' | sed 's/^://')
+
+            if [ -z "$pane_dir" ] || [ ! -d "$pane_dir" ]; then
+                pane_dir="$HOME"
+            fi
+
+            # 去掉窗口名前缀（如 ":zsh" -> "zsh"）
+            window_name=$(echo "$window_name" | sed 's/^://')
+            tmux new-window -t "$target_session:$win_idx" -n "$window_name" -c "$pane_dir"
+        else
+            # 重命名第一个窗口
+            window_name=$(echo "$window_name" | sed 's/^://')
+            tmux rename-window -t "$target_session:0" "$window_name"
+        fi
+    done <<< "$windows"
+
+    echo "成功恢复 session '$target_session'"
+    return 0
+}
+
+# 使用 tmux-resurrect 恢复所有 session（用于没有运行 session 时）
+restore_all_sessions() {
     local snapshot_file="$1"
 
     if [ -z "$snapshot_file" ]; then
@@ -17,7 +79,7 @@ restore_sessions() {
     fi
 
     if [ -L "$snapshot_file" ] || [ -f "$snapshot_file" ]; then
-        echo "正在从快照恢复 tmux session..."
+        echo "正在从快照恢复所有 tmux session..."
 
         # 创建临时 session 用于执行恢复
         tmux new-session -d -s temp_restore_session 2>/dev/null
@@ -66,7 +128,7 @@ find_session_in_snapshots() {
     for snapshot in "$RESURRECT_DIR"/tmux_resurrect_*.txt; do
         if [ -f "$snapshot" ]; then
             # 检查快照中是否包含该 session
-            if grep -q "^state[[:space:]]\\+$session_name[[:space:]]*\$" "$snapshot"; then
+            if grep -q "^state[[:space:]].*$session_name" "$snapshot"; then
                 # 提取时间戳
                 local timestamp=$(basename "$snapshot" | sed 's/tmux_resurrect_//' | sed 's/.txt//' | sed 's/T//')
                 if [ "$timestamp" -gt "$latest_time" ]; then
@@ -101,21 +163,42 @@ if [ -n "$SESSION_NAME" ]; then
             snapshot_date=$(basename "$found_snapshot" | sed 's/tmux_resurrect_//' | sed 's/.txt//')
             echo "找到快照：$snapshot_date"
 
-            # 恢复该快照
-            if restore_sessions "$found_snapshot"; then
-                sleep 0.5
+            # 检查是否有其他正在运行的 session
+            RUNNING_SESSIONS=$(tmux list-sessions 2>/dev/null | wc -l | tr -d ' ')
 
-                # 检查恢复后是否有指定 session
-                if session_exists "$SESSION_NAME"; then
-                    echo "成功恢复 session '$SESSION_NAME'"
-                    tmux attach -t "$SESSION_NAME"
+            if [ "$RUNNING_SESSIONS" -gt 0 ]; then
+                # 有其他 session 在运行，使用手动恢复（不影响其他 session）
+                echo "检测到有正在运行的 session，将仅恢复 '$SESSION_NAME' 而不影响其他 session"
+
+                if restore_single_session "$found_snapshot" "$SESSION_NAME"; then
+                    sleep 0.3
+                    if session_exists "$SESSION_NAME"; then
+                        tmux attach -t "$SESSION_NAME"
+                    else
+                        echo "错误：Session 创建失败"
+                        exit 1
+                    fi
                 else
-                    echo "错误：快照恢复失败"
+                    echo "错误：无法恢复 session"
                     exit 1
                 fi
             else
-                echo "错误：无法恢复快照"
-                exit 1
+                # 没有运行的 session，使用完整恢复
+                if restore_all_sessions "$found_snapshot"; then
+                    sleep 0.5
+
+                    # 检查恢复后是否有指定 session
+                    if session_exists "$SESSION_NAME"; then
+                        echo "成功恢复 session '$SESSION_NAME'"
+                        tmux attach -t "$SESSION_NAME"
+                    else
+                        echo "错误：快照恢复失败"
+                        exit 1
+                    fi
+                else
+                    echo "错误：无法恢复快照"
+                    exit 1
+                fi
             fi
         else
             echo "错误：在所有历史快照中都没有找到 session '$SESSION_NAME'"
@@ -133,7 +216,7 @@ if [ -n "$SESSION_NAME" ]; then
             echo "历史快照中的 session："
             for snapshot in "$RESURRECT_DIR"/tmux_resurrect_*.txt; do
                 if [ -f "$snapshot" ]; then
-                    sessions=$(grep "^state" "$snapshot" | awk '{print $2}')
+                    sessions=$(grep "^state" "$snapshot" | awk '{for(i=2;i<=NF;i++) print $i}')
                     if [ -n "$sessions" ]; then
                         snapshot_date=$(basename "$snapshot" | sed 's/tmux_resurrect_//' | sed 's/.txt//')
                         echo "  [$snapshot_date] $sessions"
@@ -147,12 +230,20 @@ if [ -n "$SESSION_NAME" ]; then
 else
     # 没有指定 session，使用原有的智能启动逻辑
     if tmux list-sessions &>/dev/null; then
-        # 有运行中的 session，直接 attach
-        tmux attach
+        # 有运行中的 session，选择一个 attach（不影响其他客户端）
+        # 获取第一个可用的 session
+        FIRST_SESSION=$(tmux list-sessions -F "#{session_name}" | head -1)
+        tmux attach -t "$FIRST_SESSION"
     else
         # 没有运行中的 session，尝试恢复最新快照
-        if restore_sessions; then
-            tmux attach
+        if restore_all_sessions; then
+            # 恢复后，attach 到第一个可用 session
+            FIRST_SESSION=$(tmux list-sessions -F "#{session_name}" | head -1)
+            if [ -n "$FIRST_SESSION" ]; then
+                tmux attach -t "$FIRST_SESSION"
+            else
+                tmux attach
+            fi
         else
             # 没有保存的快照，创建新 session
             echo "没有找到保存的 session，创建新的..."
