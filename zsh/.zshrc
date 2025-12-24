@@ -267,3 +267,42 @@ alias wps='open -a wpsoffice'
 
 # Tmux 智能启动
 alias tm='~/.local/bin/tmux-smart-start.sh'
+
+# ----------------------------------
+# 自动激活/退出 Python 虚拟环境
+# ----------------------------------
+auto_activate_venv() {
+    # 如果当前已在虚拟环境中，检查是否需要退出
+    if [[ -n "$VIRTUAL_ENV" ]]; then
+        # 获取虚拟环境所在的项目目录
+        local venv_project_dir="${VIRTUAL_ENV%/*}"
+        # 如果当前目录不在该项目下，退出虚拟环境
+        if [[ "$PWD" != "$venv_project_dir"* ]]; then
+            deactivate
+        else
+            # 仍在项目目录下，无需操作
+            return
+        fi
+    fi
+
+    # 向上查找虚拟环境（最多 3 层）
+    local dir="$PWD"
+    local count=0
+    while [[ "$dir" != "/" && "$dir" != "" && $count -lt 3 ]]; do
+        for venv_name in .venv venv env; do
+            if [[ -f "$dir/$venv_name/bin/activate" ]]; then
+                source "$dir/$venv_name/bin/activate"
+                return
+            fi
+        done
+        dir="${dir:h}"
+        ((count++))
+    done
+}
+
+# 注册到目录切换 hook
+autoload -Uz add-zsh-hook
+add-zsh-hook chpwd auto_activate_venv
+
+# shell 启动时也检查一次（适用于 tmux 恢复等场景）
+auto_activate_venv
