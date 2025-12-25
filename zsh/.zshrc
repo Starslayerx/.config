@@ -272,32 +272,37 @@ alias tm='~/.local/bin/tmux-smart-start.sh'
 # 自动激活/退出 Python 虚拟环境
 # ----------------------------------
 auto_activate_venv() {
-    # 如果当前已在虚拟环境中，检查是否需要退出
-    if [[ -n "$VIRTUAL_ENV" ]]; then
-        # 获取虚拟环境所在的项目目录
-        local venv_project_dir="${VIRTUAL_ENV%/*}"
-        # 如果当前目录不在该项目下，退出虚拟环境
-        if [[ "$PWD" != "$venv_project_dir"* ]]; then
-            deactivate
-        else
-            # 仍在项目目录下，无需操作
-            return
-        fi
-    fi
-
-    # 向上查找虚拟环境（最多 3 层）
+    # 先查找当前目录最近的虚拟环境（向上最多 3 层）
+    local target_venv=""
     local dir="$PWD"
     local count=0
     while [[ "$dir" != "/" && "$dir" != "" && $count -lt 3 ]]; do
         for venv_name in .venv venv env; do
             if [[ -f "$dir/$venv_name/bin/activate" ]]; then
-                source "$dir/$venv_name/bin/activate"
-                return
+                target_venv="$dir/$venv_name"
+                break 2  # 找到最近的就退出两层循环
             fi
         done
         dir="${dir:h}"
         ((count++))
     done
+
+    # 如果当前已在虚拟环境中
+    if [[ -n "$VIRTUAL_ENV" ]]; then
+        # 如果找到的虚拟环境和当前激活的相同，无需操作
+        if [[ "$VIRTUAL_ENV" == "$target_venv" ]]; then
+            return
+        fi
+        # 否则，退出当前虚拟环境
+        if typeset -f deactivate >/dev/null; then
+            deactivate
+        fi
+    fi
+
+    # 激活找到的虚拟环境
+    if [[ -n "$target_venv" && -f "$target_venv/bin/activate" ]]; then
+        source "$target_venv/bin/activate"
+    fi
 }
 
 # 注册到目录切换 hook
