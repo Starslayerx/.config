@@ -1,0 +1,106 @@
+GENERATE_REPORT(1) User Commands GENERATE_REPORT(1)
+
+NAME
+generate_report.sh - generate git commit reports for specified time periods
+
+SYNOPSIS
+generate_report.sh [PERIOD | DATE [END_DATE]]
+
+DESCRIPTION
+Generate a formatted markdown table of git commits grouped by date for
+the current repository. The script filters commits by the current git
+user and excludes merge commits.
+
+       Output format includes:
+       - Author name
+       - Date-grouped commit tables with:
+         * Short commit ID (7 characters)
+         * Commit message
+
+ARGUMENTS
+PERIOD
+Predefined time period (see PERIODS section)
+
+       DATE
+              Specific date in YYYY-MM-DD format
+              If only DATE is provided, generates report for that single day
+
+       END_DATE
+              Optional end date in YYYY-MM-DD format
+              When provided with DATE, generates report for the date range
+
+PERIODS
+today
+Current day (00:00:00 to now)
+
+       yesterday
+              Previous day (yesterday 00:00:00 to today 00:00:00)
+
+       thisweek
+              Current week from Monday to today
+
+       lastweek
+              Previous week from Monday to Sunday
+
+       thismonth
+              Current month from 1st to today
+
+       lastmonth
+              Previous month (1st to last day)
+
+OPTIONS
+No options are available. The script uses positional arguments only.
+
+EXAMPLES
+Generate report for today:
+$ generate_report.sh
+$ generate_report.sh today
+
+       Generate report for yesterday:
+              $ generate_report.sh yesterday
+
+       Generate report for current week:
+              $ generate_report.sh thisweek
+
+       Generate report for last month:
+              $ generate_report.sh lastmonth
+
+       Generate report for specific date:
+              $ generate_report.sh 2025-12-24
+
+       Generate report for date range:
+              $ generate_report.sh 2025-12-20 2025-12-24
+
+OUTPUT FORMAT
+The output is in markdown format:
+
+              - Author: <git user name>
+
+              - Date: <YYYY-MM-DD>
+
+              | Commit ID | Message |
+              | :-------- | :------ |
+              | abc1234   | feat: add new feature |
+              | def5678   | fix: bug fix |
+
+       Multiple dates are separated by blank lines with their own tables.
+
+ENVIRONMENT
+The script requires: - Git repository (must be run within a git repository) - macOS date command (uses -j and -v flags) - Git user.name configuration
+
+EXIT STATUS
+0 Success
+
+       1      Invalid date parameter or format error
+
+NOTES - The script uses macOS-specific date command syntax - For Linux/GNU systems, the date calculations may need modification - Only commits by the current git user are included - Merge commits are automatically excluded (--no-merges) - Time ranges are inclusive of start date, exclusive of end date
+
+SEE ALSO
+git-log(1), date(1)
+
+BUGS
+Date calculations rely on macOS date command. For portability to
+Linux systems, consider using GNU date (gdate) or alternative
+date calculation methods.
+
+                                 December 2025         GENERATE_REPORT(1)
