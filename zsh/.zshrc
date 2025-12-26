@@ -271,21 +271,61 @@ alias tm='~/.local/bin/tmux-smart-start.sh'
 # ----------------------------------
 # 自动激活/退出 Python 虚拟环境
 # ----------------------------------
+
+# 定义约定的项目根目录列表（支持 ~ 扩展）
+VENV_PROJECT_ROOTS=(
+    "$HOME/GitHub/MedicalServiceFullstack/backend"
+    "$HOME/GitHub/flask_site/"
+    # 在这里添加更多项目根目录
+)
+
 auto_activate_venv() {
-    # 先查找当前目录最近的虚拟环境（向上最多 3 层）
     local target_venv=""
-    local dir="$PWD"
-    local count=0
-    while [[ "$dir" != "/" && "$dir" != "" && $count -lt 3 ]]; do
-        for venv_name in .venv venv env; do
-            if [[ -f "$dir/$venv_name/bin/activate" ]]; then
-                target_venv="$dir/$venv_name"
-                break 2  # 找到最近的就退出两层循环
+    local venv_names=(.venv venv env)
+
+    # 1. 优先检测当前目录
+    for venv_name in $venv_names; do
+        if [[ -f "$PWD/$venv_name/bin/activate" ]]; then
+            target_venv="$PWD/$venv_name"
+            break
+        fi
+    done
+
+    # 2. 如果当前目录没有，检查是否在约定的项目根目录下
+    if [[ -z "$target_venv" ]]; then
+        for project_root in $VENV_PROJECT_ROOTS; do
+            # 展开 ~ 并规范化路径
+            project_root="${project_root/#\~/$HOME}"
+
+            # 检查当前目录是否是该项目根目录的子目录
+            if [[ "$PWD" == "$project_root"* ]]; then
+                # 在项目根目录中查找虚拟环境
+                for venv_name in $venv_names; do
+                    if [[ -f "$project_root/$venv_name/bin/activate" ]]; then
+                        target_venv="$project_root/$venv_name"
+                        break 2
+                    fi
+                done
             fi
         done
-        dir="${dir:h}"
-        ((count++))
-    done
+    fi
+
+    # 3. 如果还没找到，向上查找 2 级父目录
+    if [[ -z "$target_venv" ]]; then
+        local dir="$PWD"
+        local count=0
+        while [[ "$dir" != "/" && "$dir" != "" && $count -lt 2 ]]; do
+            dir="${dir:h}"  # 获取父目录
+            ((count++))
+
+            for venv_name in $venv_names; do
+                if [[ -f "$dir/$venv_name/bin/activate" ]]; then
+                    target_venv="$dir/$venv_name"
+                    break 2
+                fi
+            done
+        done
+    fi
 
     # 如果当前已在虚拟环境中
     if [[ -n "$VIRTUAL_ENV" ]]; then
