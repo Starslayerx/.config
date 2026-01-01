@@ -12,22 +12,13 @@ alias tm='~/.local/bin/tmux-smart-start.sh'
 ```
 
 ### 使用方式
-
-- 恢复默认会话
-   ```bash
-   tm
-   ```
-
-- 恢复指定会话
-   ```bash
-   tm <session>
-   ```
-   这个适用于使用下面命令创建的会话
-   ```bash
-   tmux new -s <session>
-   ```
-   如果没有指定，则默认从 0 开始自增到 9
-
+Tmux 智能启动脚本
+```bash
+tm              - 智能启动/恢复/attach tmux
+tm <name>       - 从历史快照中搜索并恢复指定 session
+tm --clean      - 清理旧快照，每个 session 只保留最新的
+tm --list       - 列出所有可恢复的 session
+```
 
 ### 常用命令
 以下命令需要进入命令模式后输入
