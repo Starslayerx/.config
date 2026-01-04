@@ -105,64 +105,57 @@ restore_single_session() {
     echo "正在从快照中恢复 session '$target_session'..."
 
     # 检查快照中是否有该 session
-    if ! grep -q "^state.*$target_session" "$snapshot_file"; then
+    if ! grep -q "^pane[[:space:]]$target_session[[:space:]]" "$snapshot_file"; then
         echo "错误：快照中不包含 session '$target_session'"
         return 1
     fi
 
-    # 创建临时快照文件，只包含目标 session，并去掉程序恢复信息
-    local temp_snapshot="$RESURRECT_DIR/temp_restore_$target_session.txt"
-    local temp_snapshot_with_activate="$RESURRECT_DIR/temp_restore_${target_session}_activated.txt"
+    local current_window=""
+    local session_created=false
+    local temp_panes=$(mktemp)
 
-    # 提取目标 session 的所有行
-    grep "^pane[[:space:]]\\+$target_session[[:space:]]" "$snapshot_file" > "$temp_snapshot"
-    grep "^window[[:space:]]\\+$target_session[[:space:]]" "$snapshot_file" >> "$temp_snapshot"
-    echo "state	$target_session	" >> "$temp_snapshot"
+    # 提取该 session 的所有 pane 信息到临时文件
+    grep "^pane[[:space:]]$target_session[[:space:]]" "$snapshot_file" > "$temp_panes"
 
-    # 为每个 pane 添加虚拟环境激活命令
-    > "$temp_snapshot_with_activate"
+    # 先获取 window 名称映射
+    local temp_windows=$(mktemp)
+    grep "^window[[:space:]]$target_session[[:space:]]" "$snapshot_file" > "$temp_windows"
 
-    # 不修改 command，直接复制原始内容
-    grep "^pane[[:space:]]\\+$target_session[[:space:]]" "$snapshot_file" >> "$temp_snapshot_with_activate"
+    # 按 window 和 pane 顺序处理
+    # 格式: pane session window_idx ??? flags pane_idx title :dir active cmd args
+    while IFS=$'\t' read -r type session_name window_idx win2 flags pane_idx title pane_dir_raw pane_active pane_cmd rest; do
+        # 去掉 pane_dir 的冒号前缀
+        local pane_dir="${pane_dir_raw#:}"
 
-    # 添加 window 和 state 行
-    grep "^window[[:space:]]\\+$target_session[[:space:]]" "$snapshot_file" >> "$temp_snapshot_with_activate"
-    echo "state	$target_session	" >> "$temp_snapshot_with_activate"
+        # 获取对应的 window 名称
+        local window_name=$(awk -F'\t' -v idx="$window_idx" '$3 == idx {gsub(/^:/, "", $4); print $4; exit}' "$temp_windows")
+        [ -z "$window_name" ] && window_name="window-$window_idx"
 
-    # 临时替换 last 链接
-    local original_last=""
-    if [ -L "$LAST_SAVE" ]; then
-        original_last=$(readlink "$LAST_SAVE")
+        if [ "$session_created" = false ]; then
+            # 创建 session 和第一个 window
+            tmux new-session -d -s "$target_session" -n "$window_name" -c "$pane_dir" 2>/dev/null
+            session_created=true
+            current_window="$window_idx"
+        elif [ "$window_idx" != "$current_window" ]; then
+            # 新 window
+            tmux new-window -t "$target_session" -n "$window_name" -c "$pane_dir"
+            current_window="$window_idx"
+        else
+            # 同一 window 的新 pane（水平分割）
+            tmux split-window -t "$target_session" -h -c "$pane_dir"
+        fi
+    done < "$temp_panes"
+
+    rm -f "$temp_panes" "$temp_windows"
+
+    # 检查 session 是否创建成功
+    if tmux has-session -t "$target_session" 2>/dev/null; then
+        echo "成功恢复 session '$target_session'"
+        return 0
+    else
+        echo "错误：Session 创建失败"
+        return 1
     fi
-
-    # 备份并替换 last 链接
-    rm -f "$LAST_SAVE"
-    ln -s "$(basename "$temp_snapshot_with_activate")" "$LAST_SAVE"
-
-    # 创建临时 session 用于执行恢复脚本
-    tmux new-session -d -s temp_restore_session_$$ 2>/dev/null
-
-    # 执行恢复
-    tmux run-shell "$HOME/.tmux/plugins/tmux-resurrect/scripts/restore.sh"
-
-    # 等待恢复完成
-    sleep 2
-
-    # 恢复原来的 last 链接
-    rm -f "$LAST_SAVE"
-    if [ -n "$original_last" ]; then
-        ln -s "$original_last" "$LAST_SAVE"
-    fi
-
-    # 清理临时 session
-    tmux kill-session -t temp_restore_session_$$ 2>/dev/null
-
-    # 删除临时快照文件
-    rm -f "$temp_snapshot"
-    rm -f "$temp_snapshot_with_activate"
-
-    echo "成功恢复 session '$target_session'"
-    return 0
 }
 
 # 使用 tmux-resurrect 恢复所有 session（用于没有运行 session 时）
