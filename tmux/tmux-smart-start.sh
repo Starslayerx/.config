@@ -110,6 +110,9 @@ restore_single_session() {
         return 1
     fi
 
+    # 需要恢复进程的程序列表（对应 @resurrect-processes）
+    local restore_progs="vim nvim ssh psql mysql sqlite3 python python3 uvicorn node npm pnpm redis-server"
+
     local current_window=""
     local session_created=false
     local temp_panes=$(mktemp)
@@ -130,27 +133,37 @@ restore_single_session() {
         local window_layout=$(echo "$window_info" | cut -f2)
         [ -z "$window_name" ] && window_name="window-$win_idx"
 
-        # 获取该 window 的所有 pane
+        # 获取该 window 的所有 pane，并存储 pane 信息用于后续恢复进程
         local pane_count=0
-        while IFS=$'\t' read -r type session_name window_idx win2 flags pane_idx title pane_dir_raw pane_active pane_cmd rest; do
+        local -a pane_targets
+        local -a pane_commands
+
+        while IFS=$'\t' read -r type session_name window_idx win2 flags pane_idx title pane_dir_raw pane_active pane_cmd cmd_full; do
             [ "$window_idx" != "$win_idx" ] && continue
 
             local pane_dir="${pane_dir_raw#:}"
+            local full_cmd="${cmd_full#:}"
 
             if [ "$session_created" = false ]; then
                 # 创建 session 和第一个 window 的第一个 pane
                 tmux new-session -d -s "$target_session" -n "$window_name" -c "$pane_dir" 2>/dev/null
                 session_created=true
                 current_window="$win_idx"
+                pane_targets+=("$target_session:$win_idx.0")
             elif [ "$win_idx" != "$current_window" ]; then
                 # 新 window 的第一个 pane
                 tmux new-window -t "$target_session:$win_idx" -n "$window_name" -c "$pane_dir"
                 current_window="$win_idx"
                 pane_count=0
+                pane_targets+=("$target_session:$win_idx.0")
             else
                 # 同一 window 的后续 pane
                 tmux split-window -t "$target_session:$win_idx" -c "$pane_dir"
+                pane_targets+=("$target_session:$win_idx.$pane_count")
             fi
+
+            # 保存命令信息用于后续恢复
+            pane_commands+=("$pane_cmd|$full_cmd")
             ((pane_count++))
         done < "$temp_panes"
 
@@ -158,6 +171,28 @@ restore_single_session() {
         if [ -n "$window_layout" ] && [ "$pane_count" -gt 1 ]; then
             tmux select-layout -t "$target_session:$win_idx" "$window_layout" 2>/dev/null || true
         fi
+
+        # 恢复进程
+        for i in "${!pane_targets[@]}"; do
+            local pane_target="${pane_targets[$i]}"
+            local cmd_info="${pane_commands[$i]}"
+            local pane_cmd="${cmd_info%%|*}"
+            local full_cmd="${cmd_info#*|}"
+
+            # 检查是否需要恢复该进程
+            local should_restore=false
+            for prog in $restore_progs; do
+                if [ "$pane_cmd" = "$prog" ]; then
+                    should_restore=true
+                    break
+                fi
+            done
+
+            if [ "$should_restore" = true ] && [ -n "$full_cmd" ]; then
+                # 发送命令到 pane
+                tmux send-keys -t "$pane_target" "$full_cmd" C-m
+            fi
+        done
     done
 
     rm -f "$temp_panes" "$temp_windows"
