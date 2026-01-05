@@ -113,38 +113,52 @@ restore_single_session() {
     local current_window=""
     local session_created=false
     local temp_panes=$(mktemp)
-
-    # 提取该 session 的所有 pane 信息到临时文件
-    grep "^pane[[:space:]]$target_session[[:space:]]" "$snapshot_file" > "$temp_panes"
-
-    # 先获取 window 名称映射
     local temp_windows=$(mktemp)
+
+    # 提取该 session 的所有 pane 和 window 信息
+    grep "^pane[[:space:]]$target_session[[:space:]]" "$snapshot_file" > "$temp_panes"
     grep "^window[[:space:]]$target_session[[:space:]]" "$snapshot_file" > "$temp_windows"
 
-    # 按 window 和 pane 顺序处理
-    # 格式: pane session window_idx ??? flags pane_idx title :dir active cmd args
-    while IFS=$'\t' read -r type session_name window_idx win2 flags pane_idx title pane_dir_raw pane_active pane_cmd rest; do
-        # 去掉 pane_dir 的冒号前缀
-        local pane_dir="${pane_dir_raw#:}"
+    # 获取所有唯一的 window index
+    local window_indices=$(awk -F'\t' '{print $3}' "$temp_panes" | sort -u)
 
-        # 获取对应的 window 名称
-        local window_name=$(awk -F'\t' -v idx="$window_idx" '$3 == idx {gsub(/^:/, "", $4); print $4; exit}' "$temp_windows")
-        [ -z "$window_name" ] && window_name="window-$window_idx"
+    # 对每个 window 进行处理
+    for win_idx in $window_indices; do
+        # 获取该 window 的名称和布局
+        local window_info=$(awk -F'\t' -v idx="$win_idx" '$3 == idx {print $4"\t"$7; exit}' "$temp_windows")
+        local window_name=$(echo "$window_info" | cut -f1 | sed 's/^://')
+        local window_layout=$(echo "$window_info" | cut -f2)
+        [ -z "$window_name" ] && window_name="window-$win_idx"
 
-        if [ "$session_created" = false ]; then
-            # 创建 session 和第一个 window
-            tmux new-session -d -s "$target_session" -n "$window_name" -c "$pane_dir" 2>/dev/null
-            session_created=true
-            current_window="$window_idx"
-        elif [ "$window_idx" != "$current_window" ]; then
-            # 新 window
-            tmux new-window -t "$target_session" -n "$window_name" -c "$pane_dir"
-            current_window="$window_idx"
-        else
-            # 同一 window 的新 pane（水平分割）
-            tmux split-window -t "$target_session" -h -c "$pane_dir"
+        # 获取该 window 的所有 pane
+        local pane_count=0
+        while IFS=$'\t' read -r type session_name window_idx win2 flags pane_idx title pane_dir_raw pane_active pane_cmd rest; do
+            [ "$window_idx" != "$win_idx" ] && continue
+
+            local pane_dir="${pane_dir_raw#:}"
+
+            if [ "$session_created" = false ]; then
+                # 创建 session 和第一个 window 的第一个 pane
+                tmux new-session -d -s "$target_session" -n "$window_name" -c "$pane_dir" 2>/dev/null
+                session_created=true
+                current_window="$win_idx"
+            elif [ "$win_idx" != "$current_window" ]; then
+                # 新 window 的第一个 pane
+                tmux new-window -t "$target_session:$win_idx" -n "$window_name" -c "$pane_dir"
+                current_window="$win_idx"
+                pane_count=0
+            else
+                # 同一 window 的后续 pane
+                tmux split-window -t "$target_session:$win_idx" -c "$pane_dir"
+            fi
+            ((pane_count++))
+        done < "$temp_panes"
+
+        # 恢复该 window 的布局
+        if [ -n "$window_layout" ] && [ "$pane_count" -gt 1 ]; then
+            tmux select-layout -t "$target_session:$win_idx" "$window_layout" 2>/dev/null || true
         fi
-    done < "$temp_panes"
+    done
 
     rm -f "$temp_panes" "$temp_windows"
 
