@@ -110,92 +110,99 @@ restore_single_session() {
         return 1
     fi
 
-    # 需要恢复进程的程序列表（对应 @resurrect-processes）
-    local restore_progs="vim nvim ssh psql mysql sqlite3 python python3 uvicorn node npm pnpm redis-server"
+    # 需要恢复进程的程序列表
+    local restore_progs="vim nvim ssh psql mysql sqlite3 python python3 uvicorn node npm pnpm redis-server uv"
 
-    local current_window=""
     local session_created=false
     local temp_panes=$(mktemp)
     local temp_windows=$(mktemp)
+    local temp_cmds=$(mktemp)
 
     # 提取该 session 的所有 pane 和 window 信息
     grep "^pane[[:space:]]$target_session[[:space:]]" "$snapshot_file" > "$temp_panes"
     grep "^window[[:space:]]$target_session[[:space:]]" "$snapshot_file" > "$temp_windows"
 
-    # 获取所有唯一的 window index
-    local window_indices=$(awk -F'\t' '{print $3}' "$temp_panes" | sort -u)
+    # 获取所有唯一的 window index（按数字排序）
+    local window_indices=$(awk -F'\t' '{print $3}' "$temp_panes" | sort -nu)
 
-    # 对每个 window 进行处理
+    # 第一阶段：创建所有 window 和 pane
     for win_idx in $window_indices; do
-        # 获取该 window 的名称和布局
-        local window_info=$(awk -F'\t' -v idx="$win_idx" '$3 == idx {print $4"\t"$7; exit}' "$temp_windows")
-        local window_name=$(echo "$window_info" | cut -f1 | sed 's/^://')
-        local window_layout=$(echo "$window_info" | cut -f2)
+        # 获取该 window 的名称
+        local window_name=$(awk -F'\t' -v idx="$win_idx" '$3 == idx {gsub(/^:/, "", $4); print $4; exit}' "$temp_windows")
         [ -z "$window_name" ] && window_name="window-$win_idx"
 
-        # 获取该 window 的所有 pane，并存储 pane 信息用于后续恢复进程
-        local pane_count=0
-        local -a pane_targets
-        local -a pane_commands
+        # 获取该 window 的所有 pane，按 pane_idx 排序
+        local temp_win_panes=$(mktemp)
+        awk -F'\t' -v idx="$win_idx" '$3 == idx' "$temp_panes" | sort -t$'\t' -k6,6n > "$temp_win_panes"
 
-        while IFS=$'\t' read -r type session_name window_idx win2 flags pane_idx title pane_dir_raw pane_active pane_cmd cmd_full; do
-            [ "$window_idx" != "$win_idx" ] && continue
+        local pane_count=$(wc -l < "$temp_win_panes" | tr -d ' ')
+        local created_first=false
 
+        # 按顺序创建每个 pane
+        while IFS=$'\t' read -r type session_name w_idx w2 flags pane_idx title pane_dir_raw rest; do
             local pane_dir="${pane_dir_raw#:}"
-            local full_cmd="${cmd_full#:}"
 
             if [ "$session_created" = false ]; then
-                # 创建 session 和第一个 window 的第一个 pane
+                # 创建 session 和第一个 pane
                 tmux new-session -d -s "$target_session" -n "$window_name" -c "$pane_dir" 2>/dev/null
                 session_created=true
-                current_window="$win_idx"
-                pane_targets+=("$target_session:$win_idx.0")
-            elif [ "$win_idx" != "$current_window" ]; then
-                # 新 window 的第一个 pane
-                tmux new-window -t "$target_session:$win_idx" -n "$window_name" -c "$pane_dir"
-                current_window="$win_idx"
-                pane_count=0
-                pane_targets+=("$target_session:$win_idx.0")
+                created_first=true
+            elif [ "$created_first" = false ]; then
+                # 这个 window 的第一个 pane
+                tmux new-window -t "$target_session" -n "$window_name" -c "$pane_dir"
+                created_first=true
             else
-                # 同一 window 的后续 pane
-                tmux split-window -t "$target_session:$win_idx" -c "$pane_dir"
-                pane_targets+=("$target_session:$win_idx.$pane_count")
+                # 后续 pane
+                tmux split-window -t "$target_session:$window_name" -c "$pane_dir"
+                tmux select-layout -t "$target_session:$window_name" tiled >/dev/null 2>&1
             fi
-
-            # 保存命令信息用于后续恢复
-            pane_commands+=("$pane_cmd|$full_cmd")
-            ((pane_count++))
-        done < "$temp_panes"
+        done < "$temp_win_panes"
 
         # 恢复该 window 的布局
-        if [ -n "$window_layout" ] && [ "$pane_count" -gt 1 ]; then
-            tmux select-layout -t "$target_session:$win_idx" "$window_layout" 2>/dev/null || true
+        local window_layout=$(awk -F'\t' -v idx="$win_idx" '$3 == idx {print $7; exit}' "$temp_windows")
+        if [ -n "$window_layout" ]; then
+            tmux select-layout -t "$target_session:$window_name" "$window_layout" 2>/dev/null || true
         fi
 
-        # 恢复进程
-        for i in "${!pane_targets[@]}"; do
-            local pane_target="${pane_targets[$i]}"
-            local cmd_info="${pane_commands[$i]}"
-            local pane_cmd="${cmd_info%%|*}"
-            local full_cmd="${cmd_info#*|}"
+        # 保存每个 pane 的命令到临时文件（按 pane_idx 排序）
+        awk -F'\t' -v idx="$win_idx" -v sess="$target_session" -v wname="$window_name" \
+            '$3 == idx {
+                pane_idx = $6
+                cmd_name = $10
+                full_cmd = $11
+                gsub(/^:/, "", full_cmd)
+                print pane_idx "\t" sess ":" wname "." pane_idx "\t" cmd_name "\t" full_cmd
+            }' "$temp_panes" | sort -t$'\t' -k1,1n >> "$temp_cmds"
 
-            # 检查是否需要恢复该进程
-            local should_restore=false
-            for prog in $restore_progs; do
-                if [ "$pane_cmd" = "$prog" ]; then
-                    should_restore=true
-                    break
-                fi
-            done
-
-            if [ "$should_restore" = true ] && [ -n "$full_cmd" ]; then
-                # 发送命令到 pane
-                tmux send-keys -t "$pane_target" "$full_cmd" C-m
-            fi
-        done
+        rm -f "$temp_win_panes"
     done
 
-    rm -f "$temp_panes" "$temp_windows"
+    # 第二阶段：按顺序恢复进程，添加延迟确保依赖服务启动
+    while IFS=$'\t' read -r pane_idx pane_target pane_cmd full_cmd; do
+        [ -z "$pane_target" ] && continue
+        [ -z "$full_cmd" ] && continue
+
+        # 检查是否需要恢复该进程
+        local should_restore=false
+        for prog in $restore_progs; do
+            if [ "$pane_cmd" = "$prog" ]; then
+                should_restore=true
+                break
+            fi
+        done
+
+        if [ "$should_restore" = true ]; then
+            echo "  启动 pane $pane_idx: $pane_cmd"
+            tmux send-keys -t "$pane_target" "$full_cmd" C-m
+            # 添加短暂延迟，让服务有时间启动
+            sleep 0.5
+        fi
+    done < "$temp_cmds"
+
+    rm -f "$temp_panes" "$temp_windows" "$temp_cmds"
+
+    # 选择第一个 window
+    tmux select-window -t "$target_session:0" 2>/dev/null || true
 
     # 检查 session 是否创建成功
     if tmux has-session -t "$target_session" 2>/dev/null; then
