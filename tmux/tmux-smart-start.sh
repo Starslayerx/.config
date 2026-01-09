@@ -62,10 +62,11 @@ list_sessions() {
 
     local temp_file=$(mktemp)
 
+    # 基于 pane 行（而不是 state 行）来查找 session
     for snapshot in "$RESURRECT_DIR"/tmux_resurrect_*.txt; do
         [ -f "$snapshot" ] || continue
         local date_str=$(basename "$snapshot" | sed 's/tmux_resurrect_//' | sed 's/.txt//')
-        grep "^state" "$snapshot" 2>/dev/null | awk -v d="$date_str" '{print $2, d}'
+        grep "^pane" "$snapshot" 2>/dev/null | awk -F'\t' -v d="$date_str" '{print $2, d}'
     done | sort -k1,1 -k2,2r | awk '!seen[$1]++' > "$temp_file"
 
     if [ ! -s "$temp_file" ]; then
@@ -265,14 +266,14 @@ restore_all_sessions() {
 find_session_in_snapshots() {
     local session_name="$1"
 
-    # 搜索所有快照，找到最新的包含该 session 的文件
+    # 搜索所有快照，找到最新的包含该 session 完整数据（有 pane 行）的文件
     local found_snapshot=""
     local latest_time=0
 
     for snapshot in "$RESURRECT_DIR"/tmux_resurrect_*.txt; do
         if [ -f "$snapshot" ]; then
-            # 检查快照中是否包含该 session
-            if grep -q "^state[[:space:]].*$session_name" "$snapshot"; then
+            # 检查快照中是否包含该 session 的 pane 行（不仅仅是 state 行）
+            if grep -q "^pane[[:space:]].*$session_name[[:space:]]" "$snapshot"; then
                 # 提取时间戳
                 local timestamp=$(basename "$snapshot" | sed 's/tmux_resurrect_//' | sed 's/.txt//' | sed 's/T//')
                 if [ "$timestamp" -gt "$latest_time" ]; then
