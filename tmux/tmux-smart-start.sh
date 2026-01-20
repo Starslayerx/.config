@@ -150,29 +150,30 @@ restore_single_session() {
                 created_first=true
             elif [ "$created_first" = false ]; then
                 # 这个 window 的第一个 pane
-                tmux new-window -t "$target_session" -n "$window_name" -c "$pane_dir"
+                tmux new-window -t "$target_session:$win_idx" -n "$window_name" -c "$pane_dir"
                 created_first=true
             else
-                # 后续 pane
-                tmux split-window -t "$target_session:$window_name" -c "$pane_dir"
-                tmux select-layout -t "$target_session:$window_name" tiled >/dev/null 2>&1
+                # 后续 pane - 使用 window index 定位
+                tmux split-window -t "$target_session:$win_idx" -c "$pane_dir"
+                tmux select-layout -t "$target_session:$win_idx" tiled >/dev/null 2>&1
             fi
         done < "$temp_win_panes"
 
         # 恢复该 window 的布局
         local window_layout=$(awk -F'\t' -v idx="$win_idx" '$3 == idx {print $7; exit}' "$temp_windows")
         if [ -n "$window_layout" ]; then
-            tmux select-layout -t "$target_session:$window_name" "$window_layout" 2>/dev/null || true
+            tmux select-layout -t "$target_session:$win_idx" "$window_layout" 2>/dev/null || true
         fi
 
         # 保存每个 pane 的命令到临时文件（按 pane_idx 排序）
-        awk -F'\t' -v idx="$win_idx" -v sess="$target_session" -v wname="$window_name" \
+        # 使用 window index 而不是 window name 避免特殊字符问题
+        awk -F'\t' -v idx="$win_idx" -v sess="$target_session" \
             '$3 == idx {
                 pane_idx = $6
                 cmd_name = $10
                 full_cmd = $11
                 gsub(/^:/, "", full_cmd)
-                print pane_idx "\t" sess ":" wname "." pane_idx "\t" cmd_name "\t" full_cmd
+                print pane_idx "\t" sess ":" idx "." pane_idx "\t" cmd_name "\t" full_cmd
             }' "$temp_panes" | sort -t$'\t' -k1,1n >> "$temp_cmds"
 
         rm -f "$temp_win_panes"
@@ -194,7 +195,9 @@ restore_single_session() {
 
         if [ "$should_restore" = true ]; then
             echo "  启动 pane $pane_idx: $pane_cmd"
-            tmux send-keys -t "$pane_target" "$full_cmd" C-m
+            tmux send-keys -t "$pane_target" "$full_cmd" C-m 2>/dev/null || {
+                echo "  警告：启动 pane $pane_idx 失败，跳过"
+            }
             # 添加短暂延迟，让服务有时间启动
             sleep 0.5
         fi
