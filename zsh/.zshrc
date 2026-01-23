@@ -19,7 +19,36 @@ setopt HIST_IGNORE_ALL_DUPS
 #
 
 # Set editor default keymap to emacs (`-e`) or vi (`-v`)
-bindkey -e
+bindkey -v
+
+# Vi 模式光标样式：普通模式使用方块，插入模式使用竖线
+function zle-keymap-select {
+  if [[ ${KEYMAP} == vicmd ]] || [[ $1 = 'block' ]]; then
+    echo -ne '\e[1 q'  # 方块光标
+  elif [[ ${KEYMAP} == main ]] || [[ ${KEYMAP} == viins ]] || [[ ${KEYMAP} = '' ]] || [[ $1 = 'beam' ]]; then
+    echo -ne '\e[5 q'  # 竖线光标
+  fi
+}
+zle -N zle-keymap-select
+
+# 启动时使用竖线光标
+function zle-line-init {
+  echo -ne '\e[5 q'
+}
+zle -N zle-line-init
+
+# 每次命令执行后重置为竖线光标
+preexec() {
+  echo -ne '\e[5 q'
+}
+
+# 保留常用的 emacs 风格键绑定
+bindkey '^A' beginning-of-line    # Ctrl-A 跳到行首
+bindkey '^E' end-of-line          # Ctrl-E 跳到行尾
+bindkey '^K' kill-line            # Ctrl-K 删除到行尾
+bindkey '^U' backward-kill-line   # Ctrl-U 删除到行首
+bindkey '^W' backward-kill-word   # Ctrl-W 删除前一个单词
+bindkey '^R' history-incremental-search-backward  # Ctrl-R 反向搜索历史
 
 # Prompt for spelling correction of commands.
 #setopt CORRECT
@@ -123,8 +152,9 @@ zmodload -F zsh/terminfo +p:terminfo
 # Bind ^[[A/^[[B manually so up/down works both before and after zle-line-init
 for key ('^[[A' '^P' ${terminfo[kcuu1]}) bindkey ${key} history-substring-search-up
 for key ('^[[B' '^N' ${terminfo[kcud1]}) bindkey ${key} history-substring-search-down
-for key ('k') bindkey -M vicmd ${key} history-substring-search-up
-for key ('j') bindkey -M vicmd ${key} history-substring-search-down
+# vi 普通模式下 j/k 只用于多行内移动，不切换历史
+bindkey -M vicmd 'k' up-line
+bindkey -M vicmd 'j' down-line
 unset key
 # }}} End configuration added by Zim install
 
@@ -268,6 +298,9 @@ alias wps='open -a wpsoffice'
 # Tmux 智能启动
 alias tm='~/.local/bin/tmux-smart-start.sh'
 
+# Claude Code
+alias cc='claude'
+
 # ----------------------------------
 # 自动激活/退出 Python 虚拟环境
 # ----------------------------------
@@ -351,3 +384,11 @@ add-zsh-hook chpwd auto_activate_venv
 
 # shell 启动时也检查一次（适用于 tmux 恢复等场景）
 auto_activate_venv
+
+# ----------------------------------
+# Oracle Instant Client 配置
+# ----------------------------------
+export ORACLE_HOME=~/opt/oracle/instantclient_23_3
+export PATH=$ORACLE_HOME:$PATH
+export DYLD_LIBRARY_PATH=$ORACLE_HOME:$DYLD_LIBRARY_PATH
+export NLS_LANG=AMERICAN_AMERICA.AL32UTF8  # UTF8 编码，支持中文显示
