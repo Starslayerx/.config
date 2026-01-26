@@ -1,24 +1,57 @@
+# 环境变量 ~/.zshenv
+
 # 字体
 font-family = "Hack Nerd Font Mono"
 font-family-bold = "Hack Nerd Font Mono Bold"
 font-family-italic = "Hack Nerd Font Mono Italic"
 font-family-bold-italic = "Hack Nerd Font Mono Bold Italic"
 font-size = 18
+font-thicken
+font-thicken-strength = 120
 
 # 主题
-theme = dark:Nord,light:Iceberg Light
-background-opacity = 0.9
+theme = Nord
+background-opacity = 1
 background-blur = true
+
+# ======= #
+# 背景图片#
+# ======= #
+
+# img for daylight
+# background-image = "/Users/starslayerx/Pictures/mountain-flowers.jpg"
+
+# img for night
+# background-image = "/Users/starslayerx/Pictures/nord.jpg"
+
+background-image-opacity = 0.16
+background-image-position = "center"
+background-image-fit = "contain"
 
 # 窗口
 window-theme = auto
 window-height = 33
 window-width = 99
-window-position-x = 180
-window-position-y = -60
+window-position-x = 200
+window-position-y = 80
 
 # 光标
 cursor-opacity = 1
 cursor-style-blink = true
-shell-integration-features = no-cursor
+# shell-integration-features = no-cursor
 cursor-style = bar
+
+# 剪贴板 (OSC 52)
+clipboard-read = allow
+clipboard-write = allow
+
+# 禁用可能导致滚动时出现覆盖层的功能
+# 完全禁用 shell integration
+shell-integration = none
+
+# 禁用剪贴板复制通知覆盖层
+app-notifications = no-clipboard-copy
+
+# 尝试修复滚动时的文本重影问题
+# 禁用 vsync 以避免渲染问题
+window-vsync = false
