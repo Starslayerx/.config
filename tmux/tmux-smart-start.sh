@@ -105,10 +105,25 @@ restore_single_session() {
 
     echo "正在从快照中恢复 session '$target_session'..."
 
-    # 检查快照中是否有该 session
-    if ! grep -q "^pane[[:space:]]$target_session[[:space:]]" "$snapshot_file"; then
+    # 检查快照中是否有该 session（优先 pane，其次 window）
+    local has_panes=false
+    local has_windows=false
+
+    if grep -q "^pane[[:space:]]$target_session[[:space:]]" "$snapshot_file"; then
+        has_panes=true
+    fi
+
+    if grep -q "^window[[:space:]]$target_session[[:space:]]" "$snapshot_file"; then
+        has_windows=true
+    fi
+
+    if [ "$has_panes" = false ] && [ "$has_windows" = false ]; then
         echo "错误：快照中不包含 session '$target_session'"
         return 1
+    fi
+
+    if [ "$has_panes" = false ]; then
+        echo "注意：快照中只有窗口结构，没有进程信息"
     fi
 
     # 需要恢复进程的程序列表
@@ -123,6 +138,47 @@ restore_single_session() {
     grep "^pane[[:space:]]$target_session[[:space:]]" "$snapshot_file" > "$temp_panes"
     grep "^window[[:space:]]$target_session[[:space:]]" "$snapshot_file" > "$temp_windows"
 
+    # 如果没有 pane 行，从 window 行提取窗口索引
+    if [ ! -s "$temp_panes" ]; then
+        # 只有窗口结构，没有 pane 数据，从 window 行创建
+        local window_indices=$(awk -F'\t' '{print $3}' "$temp_windows" | sort -nu)
+
+        for win_idx in $window_indices; do
+            # 获取该 window 的名称
+            local window_name=$(awk -F'\t' -v idx="$win_idx" '$3 == idx {gsub(/^:/, "", $4); print $4; exit}' "$temp_windows")
+            [ -z "$window_name" ] && window_name="window-$win_idx"
+
+            if [ "$session_created" = false ]; then
+                # 创建 session 和第一个窗口
+                tmux new-session -d -s "$target_session" -n "$window_name" 2>/dev/null
+                session_created=true
+            else
+                # 创建后续窗口
+                tmux new-window -t "$target_session:$win_idx" -n "$window_name"
+            fi
+
+            # 恢复窗口布局（如果有）
+            local window_layout=$(awk -F'\t' -v idx="$win_idx" '$3 == idx {print $7; exit}' "$temp_windows")
+            if [ -n "$window_layout" ]; then
+                tmux select-layout -t "$target_session:$win_idx" "$window_layout" 2>/dev/null || true
+            fi
+        done
+
+        rm -f "$temp_panes" "$temp_windows" "$temp_cmds"
+
+        # 选择第一个 window
+        tmux select-window -t "$target_session:0" 2>/dev/null || true
+
+        if tmux has-session -t "$target_session" 2>/dev/null; then
+            echo "成功恢复 session '$target_session'（仅窗口结构）"
+            return 0
+        else
+            echo "错误：Session 创建失败"
+            return 1
+        fi
+    fi
+
+    # 正常流程：有 pane 数据
     # 获取所有唯一的 window index（按数字排序）
     local window_indices=$(awk -F'\t' '{print $3}' "$temp_panes" | sort -nu)
 
@@ -269,14 +325,36 @@ restore_all_sessions() {
 find_session_in_snapshots() {
     local session_name="$1"
 
-    # 搜索所有快照，找到最新的包含该 session 完整数据（有 pane 行）的文件
+    # 第一轮：优先查找最新的包含完整 pane 数据的快照
     local found_snapshot=""
     local latest_time=0
 
     for snapshot in "$RESURRECT_DIR"/tmux_resurrect_*.txt; do
         if [ -f "$snapshot" ]; then
-            # 检查快照中是否包含该 session 的 pane 行（不仅仅是 state 行）
-            if grep -q "^pane[[:space:]].*$session_name[[:space:]]" "$snapshot"; then
+            # 只查找有 pane 行的快照（完整数据）
+            if grep -q "^pane[[:space:]]$session_name[[:space:]]" "$snapshot"; then
+                # 提取时间戳
+                local timestamp=$(basename "$snapshot" | sed 's/tmux_resurrect_//' | sed 's/.txt//' | sed 's/T//')
+                if [ "$timestamp" -gt "$latest_time" ]; then
+                    latest_time="$timestamp"
+                    found_snapshot="$snapshot"
+                fi
+            fi
+        fi
+    done
+
+    # 如果找到了完整快照，直接返回
+    if [ -n "$found_snapshot" ]; then
+        echo "$found_snapshot"
+        return 0
+    fi
+
+    # 第二轮（降级）：如果没有完整快照，查找只有 window 行的快照
+    latest_time=0
+    for snapshot in "$RESURRECT_DIR"/tmux_resurrect_*.txt; do
+        if [ -f "$snapshot" ]; then
+            # 只查找有 window 行的快照（窗口结构）
+            if grep -q "^window[[:space:]]$session_name[[:space:]]" "$snapshot"; then
                 # 提取时间戳
                 local timestamp=$(basename "$snapshot" | sed 's/tmux_resurrect_//' | sed 's/.txt//' | sed 's/T//')
                 if [ "$timestamp" -gt "$latest_time" ]; then
