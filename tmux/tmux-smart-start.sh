@@ -373,12 +373,20 @@ session_exists() {
     tmux has-session -t "$1" 2>/dev/null
 }
 
+# Attach 到 session 并设置终端标题
+attach_with_title() {
+    local session_name="$1"
+    # 设置终端标题为 session 名称
+    echo -ne "\033]0;${session_name}\007"
+    tmux attach -t "$session_name"
+}
+
 # 如果指定了 session 名称
 if [ -n "$SESSION_NAME" ]; then
     # 检查该 session 是否已存在
     if session_exists "$SESSION_NAME"; then
         # session 存在，直接 attach
-        tmux attach -t "$SESSION_NAME"
+        attach_with_title "$SESSION_NAME"
     else
         # session 不存在，从历史快照中搜索
         echo "Session '$SESSION_NAME' 不存在，正在历史快照中搜索..."
@@ -393,7 +401,7 @@ if [ -n "$SESSION_NAME" ]; then
             if restore_single_session "$found_snapshot" "$SESSION_NAME"; then
                 sleep 0.3
                 if session_exists "$SESSION_NAME"; then
-                    tmux attach -t "$SESSION_NAME"
+                    attach_with_title "$SESSION_NAME"
                 else
                     echo "错误：Session 创建失败"
                     exit 1
@@ -435,15 +443,18 @@ else
         # 有运行中的 session，选择一个 attach（不影响其他客户端）
         # 获取第一个可用的 session
         FIRST_SESSION=$(tmux list-sessions -F "#{session_name}" | head -1)
-        tmux attach -t "$FIRST_SESSION"
+        attach_with_title "$FIRST_SESSION"
     else
         # 没有运行中的 session，尝试恢复最新快照
         if restore_all_sessions; then
             # 恢复后，attach 到第一个可用 session
             FIRST_SESSION=$(tmux list-sessions -F "#{session_name}" | head -1)
             if [ -n "$FIRST_SESSION" ]; then
-                tmux attach -t "$FIRST_SESSION"
+                attach_with_title "$FIRST_SESSION"
             else
+                # 获取默认 session 名称并 attach
+                DEFAULT_SESSION=$(tmux display-message -p '#S' 2>/dev/null || echo "tmux")
+                echo -ne "\033]0;${DEFAULT_SESSION}\007"
                 tmux attach
             fi
         else
