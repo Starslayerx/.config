@@ -302,88 +302,11 @@ alias tm='~/.local/bin/tmux-smart-start.sh'
 alias cc='claude'
 
 # ----------------------------------
-# 自动激活/退出 Python 虚拟环境
+# Python 虚拟环境由 direnv 管理
+# 在项目目录下创建 .envrc 文件即可，例如：
+#   echo 'source .venv/bin/activate' > ~/GitHub/MedicalServiceFullstack/backend/.envrc
+#   direnv allow ~/GitHub/MedicalServiceFullstack/backend
 # ----------------------------------
-
-# 定义约定的项目根目录列表（支持 ~ 扩展）
-VENV_PROJECT_ROOTS=(
-    "$HOME/GitHub/MedicalServiceFullstack/backend"
-    "$HOME/GitHub/flask_site/"
-    # 在这里添加更多项目根目录
-)
-
-auto_activate_venv() {
-    local target_venv=""
-    local venv_names=(.venv venv env)
-
-    # 1. 优先检测当前目录
-    for venv_name in $venv_names; do
-        if [[ -f "$PWD/$venv_name/bin/activate" ]]; then
-            target_venv="$PWD/$venv_name"
-            break
-        fi
-    done
-
-    # 2. 如果当前目录没有，检查是否在约定的项目根目录下
-    if [[ -z "$target_venv" ]]; then
-        for project_root in $VENV_PROJECT_ROOTS; do
-            # 展开 ~ 并规范化路径
-            project_root="${project_root/#\~/$HOME}"
-
-            # 检查当前目录是否是该项目根目录的子目录
-            if [[ "$PWD" == "$project_root"* ]]; then
-                # 在项目根目录中查找虚拟环境
-                for venv_name in $venv_names; do
-                    if [[ -f "$project_root/$venv_name/bin/activate" ]]; then
-                        target_venv="$project_root/$venv_name"
-                        break 2
-                    fi
-                done
-            fi
-        done
-    fi
-
-    # 3. 如果还没找到，向上查找 2 级父目录
-    if [[ -z "$target_venv" ]]; then
-        local dir="$PWD"
-        local count=0
-        while [[ "$dir" != "/" && "$dir" != "" && $count -lt 2 ]]; do
-            dir="${dir:h}"  # 获取父目录
-            ((count++))
-
-            for venv_name in $venv_names; do
-                if [[ -f "$dir/$venv_name/bin/activate" ]]; then
-                    target_venv="$dir/$venv_name"
-                    break 2
-                fi
-            done
-        done
-    fi
-
-    # 如果当前已在虚拟环境中
-    if [[ -n "$VIRTUAL_ENV" ]]; then
-        # 如果找到的虚拟环境和当前激活的相同，无需操作
-        if [[ "$VIRTUAL_ENV" == "$target_venv" ]]; then
-            return
-        fi
-        # 否则，退出当前虚拟环境
-        if typeset -f deactivate >/dev/null; then
-            deactivate
-        fi
-    fi
-
-    # 激活找到的虚拟环境
-    if [[ -n "$target_venv" && -f "$target_venv/bin/activate" ]]; then
-        source "$target_venv/bin/activate"
-    fi
-}
-
-# 注册到目录切换 hook
-autoload -Uz add-zsh-hook
-add-zsh-hook chpwd auto_activate_venv
-
-# shell 启动时也检查一次（适用于 tmux 恢复等场景）
-auto_activate_venv
 
 # ----------------------------------
 # Oracle Instant Client 配置
@@ -392,3 +315,32 @@ export ORACLE_HOME=~/opt/oracle/instantclient_23_3
 export PATH=$ORACLE_HOME:$PATH
 export DYLD_LIBRARY_PATH=$ORACLE_HOME:$DYLD_LIBRARY_PATH
 export NLS_LANG=AMERICAN_AMERICA.AL32UTF8  # UTF8 编码，支持中文显示
+
+# Nix
+if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+. '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+fi
+
+# direnv
+eval "$(direnv hook zsh)"
+
+# 修复 direnv/nix 清除 LS_COLORS 的问题
+_restore_ls_colors() {
+  export CLICOLOR=1
+  export LS_COLORS="di=1;34:ln=35:so=32:pi=33:ex=1;31:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43"
+  alias ls='ls --color=auto'
+}
+add-zsh-hook precmd _restore_ls_colors
+
+# API Router API key for Codex
+export APIROUTER_API_KEY="cr_caa02ff9f68ffa6b24e9c2e18af3e04df94efea32eba0416805855200eb8f1b0"
+
+
+# Custom prompt symbol (override asciiship default)
+_prompt_asciiship_vimode() {
+  case ${KEYMAP} in
+    vicmd) print -n '%S⚡%s' ;;
+    *) print -n '⚡' ;;
+  esac
+}
+PS1=${PS1% }
