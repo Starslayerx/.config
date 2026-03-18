@@ -332,10 +332,6 @@ _restore_ls_colors() {
 }
 add-zsh-hook precmd _restore_ls_colors
 
-# API Router API key for Codex
-export APIROUTER_API_KEY="cr_caa02ff9f68ffa6b24e9c2e18af3e04df94efea32eba0416805855200eb8f1b0"
-
-
 # Custom prompt symbol (override asciiship default)
 _prompt_asciiship_vimode() {
   case ${KEYMAP} in
