@@ -134,9 +134,9 @@ restore_single_session() {
     local temp_windows=$(mktemp)
     local temp_cmds=$(mktemp)
 
-    # 提取该 session 的所有 pane 和 window 信息
-    grep "^pane[[:space:]]$target_session[[:space:]]" "$snapshot_file" > "$temp_panes"
-    grep "^window[[:space:]]$target_session[[:space:]]" "$snapshot_file" > "$temp_windows"
+    # 提取该 session 的所有 pane 和 window 信息（去重，快照可能有重复行）
+    grep "^pane[[:space:]]$target_session[[:space:]]" "$snapshot_file" | uniq > "$temp_panes"
+    grep "^window[[:space:]]$target_session[[:space:]]" "$snapshot_file" | uniq > "$temp_windows"
 
     # 如果没有 pane 行，从 window 行提取窗口索引
     if [ ! -s "$temp_panes" ]; then
