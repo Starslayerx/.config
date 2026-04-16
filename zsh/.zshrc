@@ -210,13 +210,6 @@ alias git_proxy_socks="git config --global http.proxy 'socks5://127.0.0.1:7897'"
 alias git_unset_http_proxy="git config --global --unset http.proxy"
 alias git_unset_https_proxy="git config --global --unset https.proxy"
 
-# Homebrew 镜像源（清华）
-export HOMEBREW_API_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api"
-export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
-export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git"
-export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git"
-export HOMEBREW_PIP_INDEX_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
-
 # 常用 alias
 alias brew="arch -arm64 brew"
 alias v="nvim"
@@ -294,19 +287,16 @@ export NVM_DIR="$HOME/.nvm"
 # Mac OS alias
 alias typora='open -a Typora'
 alias wps='open -a wpsoffice'
+alias vscode='open -a Visual Studio Code'
 
 # Tmux 智能启动
 alias tm='~/.local/bin/tmux-smart-start.sh'
 
 # Claude Code
 alias cc='claude'
-
-# ----------------------------------
-# Python 虚拟环境由 direnv 管理
-# 在项目目录下创建 .envrc 文件即可，例如：
-#   echo 'source .venv/bin/activate' > ~/GitHub/MedicalServiceFullstack/backend/.envrc
-#   direnv allow ~/GitHub/MedicalServiceFullstack/backend
-# ----------------------------------
+# Codex
+alias co='codex -a on-request'
+alias cx='codex -s danger-full-access -a on-request'
 
 # ----------------------------------
 # Oracle Instant Client 配置
@@ -340,3 +330,13 @@ _prompt_asciiship_vimode() {
   esac
 }
 PS1=${PS1% }
+
+# unset pip source
+unset HOMEBREW_PIP_INDEX_URL
+
+
+# ----------------------------------
+# Go Configure
+# ----------------------------------
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
